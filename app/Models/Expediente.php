@@ -32,7 +32,7 @@ class Expediente extends Model
         return $this->hasOne(HistoriaClinica::class, 'Expediente_Id', 'Id_Expediente');
     }
 
-    public function notas()
+    public function notaMedicas()
     {
         return $this->hasMany(NotaMedica::class, 'Expediente_Id', 'Id_Expediente');
     }

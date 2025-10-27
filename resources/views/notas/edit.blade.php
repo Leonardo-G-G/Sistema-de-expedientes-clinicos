@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Nota Médica - Sistema Clínico</title>
+    <title>Editar Nota Médica - Sistema Clínico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -29,7 +29,6 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <h2>Sistema Clínico</h2>
-
         <div class="user-info">
             <i class="bi bi-person-circle"></i>
             <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
@@ -51,7 +50,7 @@
             <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
         </a>
 
-        <a href="{{ route('notas.create') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
+        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.*') ? 'active' : '' }}">
             <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
         </a>
 
@@ -70,7 +69,7 @@
     <!-- Main content -->
     <div class="main-content">
         <header>
-            <h1>Registrar Nota Médica</h1>
+            <h1>Editar Nota Médica</h1>
         </header>
 
         @if(session('success'))
@@ -87,60 +86,69 @@
             </div>
         @endif
 
-        <form action="{{ route('notas.store') }}" method="POST">
+        <form action="{{ route('notas.update', $nota->Id_Nota) }}" method="POST">
             @csrf
+            @method('PUT')
 
             <div class="mb-3">
                 <label>Paciente / Expediente</label>
                 <select name="Expediente_Id" class="form-select" required>
-                    <option value="">Seleccione un paciente</option>
                     @foreach($expedientes as $expediente)
-                        <option value="{{ $expediente->Id_Expediente }}">
+                        <option value="{{ $expediente->Id_Expediente }}"
+                            {{ $nota->Expediente_Id == $expediente->Id_Expediente ? 'selected' : '' }}>
                             {{ $expediente->paciente->Nombre }} {{ $expediente->paciente->Apellido }}
                         </option>
                     @endforeach
                 </select>
             </div>
 
-            <!-- Fecha y Hora automáticas -->
-            <input type="hidden" name="Fecha" value="{{ date('Y-m-d') }}">
-            <input type="hidden" name="Hora" value="{{ date('H:i') }}">
+            <!-- Fecha y Hora -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>Fecha</label>
+                    <input type="date" name="Fecha" class="form-control" value="{{ old('Fecha', $nota->Fecha) }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Hora</label>
+                    <input type="time" name="Hora" class="form-control" value="{{ old('Hora', $nota->Hora) }}" required>
+                </div>
+            </div>
 
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label>Peso (kg)</label>
-                    <input type="number" step="0.1" name="Peso" class="form-control" value="{{ old('Peso') }}">
+                    <input type="number" step="0.1" name="Peso" class="form-control" value="{{ old('Peso', $nota->Peso) }}">
                 </div>
                 <div class="col-md-6">
                     <label>Talla (m)</label>
-                    <input type="number" step="0.01" name="Talla" class="form-control" value="{{ old('Talla') }}">
+                    <input type="number" step="0.01" name="Talla" class="form-control" value="{{ old('Talla', $nota->Talla) }}">
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label>Presión Arterial</label>
-                    <input type="text" name="Presion_Arterial" class="form-control" value="{{ old('Presion_Arterial') }}">
+                    <input type="text" name="Presion_Arterial" class="form-control" value="{{ old('Presion_Arterial', $nota->Presion_Arterial) }}">
                 </div>
                 <div class="col-md-6">
                     <label>Frecuencia Cardíaca</label>
-                    <input type="number" name="Frecuencia_Cardiaca" class="form-control" value="{{ old('Frecuencia_Cardiaca') }}">
+                    <input type="number" name="Frecuencia_Cardiaca" class="form-control" value="{{ old('Frecuencia_Cardiaca', $nota->Frecuencia_Cardiaca) }}">
                 </div>
             </div>
 
             <div class="mb-3">
                 <label>Impresión Diagnóstica</label>
-                <textarea name="Impresion_Diagnostica" rows="3" class="form-control">{{ old('Impresion_Diagnostica') }}</textarea>
+                <textarea name="Impresion_Diagnostica" rows="3" class="form-control">{{ old('Impresion_Diagnostica', $nota->Impresion_Diagnostica) }}</textarea>
             </div>
 
             <div class="mb-3">
                 <label>Tratamiento</label>
-                <textarea name="Tratamiento" rows="3" class="form-control">{{ old('Tratamiento') }}</textarea>
+                <textarea name="Tratamiento" rows="3" class="form-control">{{ old('Tratamiento', $nota->Tratamiento) }}</textarea>
             </div>
 
             <div class="mb-3">
                 <label>Observación</label>
-                <textarea name="Observacion" rows="3" class="form-control">{{ old('Observacion') }}</textarea>
+                <textarea name="Observacion" rows="3" class="form-control">{{ old('Observacion', $nota->Observacion) }}</textarea>
             </div>
 
             <div class="d-flex justify-content-between">
@@ -148,7 +156,7 @@
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
                 <button type="submit" class="btn btn-success">
-                    <i class="bi bi-save"></i> Guardar Nota Médica
+                    <i class="bi bi-save"></i> Actualizar Nota Médica
                 </button>
             </div>
         </form>

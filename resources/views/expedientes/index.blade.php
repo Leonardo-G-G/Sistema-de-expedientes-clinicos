@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del Sistema Clínico</title>
+    <title>Listado de Expedientes - Sistema Clínico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
@@ -111,11 +111,6 @@
             color: #333;
         }
 
-        header .welcome {
-            font-size: 1rem;
-            color: #666;
-        }
-
         .card {
             border: none;
             border-radius: 15px;
@@ -132,21 +127,18 @@
             padding: 2rem;
         }
 
-        .card-icon {
-            font-size: 2.8rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
+        .btn-new {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            transition: background 0.3s;
         }
 
-        .card-title {
-            font-weight: 600;
-            color: #444;
-        }
-
-        .display-6 {
-            font-size: 2.5rem;
-            color: #222;
-            font-weight: bold;
+        .btn-new:hover {
+            background-color: #084298;
+            color: white;
         }
 
         footer {
@@ -194,16 +186,15 @@
             <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
         </div>
 
-        <!-- 🔗 Menú de navegación -->
         <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
         </a>
 
-        <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.create') ? 'active' : '' }}">
+        <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}">
             <i class="bi bi-folder-plus"></i> <span>Expedientes</span>
         </a>
 
-        <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.create') ? 'active' : '' }}">
+        <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
             <i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span>
         </a>
 
@@ -211,7 +202,7 @@
             <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
         </a>
 
-        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
+        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.*') ? 'active' : '' }}">
             <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
         </a>
 
@@ -227,41 +218,90 @@
         </form>
     </aside>
 
-    <!-- Main content -->
+    <!-- Main Content -->
     <div class="main-content">
         <header>
-            <h1>Panel del Sistema Clínico</h1>
-            <p class="welcome">Bienvenido a tu expediente clinico <strong>{{ Auth::user()->Nombre ?? 'Usuario' }}</strong></p>
+            <h1>Listado de Expedientes</h1>
         </header>
 
-        <div class="container-fluid">
-            <div class="row g-4">
-                <!-- Pacientes -->
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="bi bi-person-bounding-box card-icon"></i>
-                            <h5 class="card-title">Total de Pacientes</h5>
-                            <p class="display-6">{{ $totalPacientes ?? 0 }}</p>
-                        </div>
-                    </div>
-                </div>
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
 
-                <!-- Expedientes -->
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="bi bi-clipboard-data card-icon"></i>
-                            <h5 class="card-title">Expedientes Clínicos</h5>
-                            <p class="display-6">{{ $totalExpedientes ?? 0 }}</p>
-                        </div>
-                    </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Expedientes Registrados</span>
+
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Botón Nuevo Expediente -->
+                    <a href="{{ route('expedientes.create') }}" class="btn btn-new">
+                        <i class="bi bi-folder-plus"></i> Nuevo Expediente
+                    </a>
+
+                    <!-- Buscador -->
+                    <form action="{{ route('expedientes.index') }}" method="GET" class="d-flex">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Buscar expediente..." value="{{ request('search') }}">
+                        <button class="btn btn-light" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
                 </div>
             </div>
 
-            <footer>
-                <p>© {{ date('Y') }} Clínica Quirúrgica Téran — Sistema Clínico</p>
-            </footer>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Paciente</th>
+                                <th>Médico</th>
+                                <th>Fecha Apertura</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($expedientes as $expediente)
+                                <tr>
+                                    <td>{{ $expediente->Id_Expediente }}</td>
+                                    <td>{{ $expediente->paciente->Nombre ?? 'N/A' }} {{ $expediente->paciente->Apellido ?? '' }}</td>
+                                    <td>{{ $expediente->medico->Nombre ?? 'N/A' }}</td>
+                                    <td>{{ $expediente->Fecha_Apertura }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            @if($expediente->Estado_Expediente == 'Activo') bg-success 
+                                            @elseif($expediente->Estado_Expediente == 'Inactivo') bg-warning 
+                                            @else bg-secondary @endif">
+                                            {{ $expediente->Estado_Expediente }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ route('expedientes.edit', $expediente->Id_Expediente) }}" class="btn btn-sm btn-primary me-1">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <form action="{{ route('expedientes.destroy', $expediente->Id_Expediente) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este expediente?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No hay expedientes registrados.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                <div class="d-flex justify-content-center mt-3">
+                    {{ $expedientes->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
         </div>
     </div>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Expediente Clínico - Panel Admin</title>
+    <title>Crear Expediente Clínico - Sistema Clínico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -28,22 +28,36 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
-        <h2>Administrador</h2>
+        <h2>Sistema Clínico</h2>
 
         <div class="user-info">
             <i class="bi bi-person-circle"></i>
-            <p>{{ Auth::user()->Nombre ?? 'Admin' }}</p>
+            <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
         </div>
 
-        <a href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
-        <a href="{{ route('expedientes.create') }}" class="active"><i class="bi bi-folder-plus"></i> <span>Crear Expediente</span></a>
-        <a href="{{ route('historia.create') }}"><i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span></a>
-        <a href="{{ route('pacientes.index') }}"><i class="bi bi-person-lines-fill"></i> <span>Pacientes</span></a>
-        <a href="{{ route('notas.create') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
-    <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
-</a>
+        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+        </a>
 
-        <a href="#"><i class="bi bi-hospital"></i> <span>Médicos</span></a>
+        <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.create') ? 'active' : '' }}">
+            <i class="bi bi-folder-plus"></i> <span>Crear Expediente</span>
+        </a>
+
+        <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.create') ? 'active' : '' }}">
+            <i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span>
+        </a>
+
+        <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
+            <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
+        </a>
+
+        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
+            <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
+        </a>
+
+        <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
+            <i class="bi bi-person-circle"></i> <span>Perfil</span>
+        </a>
 
         <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
             @csrf
@@ -89,19 +103,14 @@
 
                 <div class="col-md-6">
                     <label>Médico responsable</label>
-                    <select name="Medico_Id" class="form-select" required>
-                        <option value="">Seleccione un médico</option>
-                        @foreach($medicos as $medico)
-                            <option value="{{ $medico->Id_Usuario }}">{{ $medico->Nombre }} {{ $medico->Apellido }}</option>
-                        @endforeach
-                    </select>
+                    <input type="text" class="form-control" value="{{ Auth::user()->Nombre }} {{ Auth::user()->Apellido }}" readonly>
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label>Fecha de creación</label>
-                    <input type="date" name="Fecha_Creacion" value="{{ date('Y-m-d') }}" class="form-control" required>
+                    <input type="date" name="Fecha_Apertura" value="{{ date('Y-m-d') }}" class="form-control" required>
                 </div>
 
                 <div class="col-md-6">
@@ -115,7 +124,7 @@
             </div>
 
             <div class="d-flex justify-content-between">
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+                <a href="{{ route('expedientes.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
                 <button type="submit" class="btn btn-success">

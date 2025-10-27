@@ -13,8 +13,8 @@ return new class extends Migration {
 
             $table->integer('Menarca_Edad')->nullable()->comment('Edad en la que comenzó la menstruación');
             $table->string('Tipo_Ciclo', 100)->nullable()->comment('Ej. 28x4, 30x3');
-            $table->enum('Ciclos_Regulares', ['Sí', 'No'])->nullable();
-            $table->enum('Ciclos_Dolor', ['Sí', 'No'])->nullable();
+            $table->boolean('Ciclos_Regulares')->nullable();
+            $table->boolean('Ciclos_Dolor')->nullable();
             $table->date('Ultima_Regla')->nullable();
             $table->integer('Inicio_Vida_Sexual')->nullable()->comment('Edad de inicio de vida sexual');
             $table->integer('Gestaciones')->default(0);

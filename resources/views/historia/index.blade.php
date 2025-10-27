@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del Sistema Clínico</title>
+    <title>Historias Clínicas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
@@ -111,11 +111,6 @@
             color: #333;
         }
 
-        header .welcome {
-            font-size: 1rem;
-            color: #666;
-        }
-
         .card {
             border: none;
             border-radius: 15px;
@@ -132,21 +127,18 @@
             padding: 2rem;
         }
 
-        .card-icon {
-            font-size: 2.8rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
+        .btn-new {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            transition: background 0.3s;
         }
 
-        .card-title {
-            font-weight: 600;
-            color: #444;
-        }
-
-        .display-6 {
-            font-size: 2.5rem;
-            color: #222;
-            font-weight: bold;
+        .btn-new:hover {
+            background-color: #084298;
+            color: white;
         }
 
         footer {
@@ -199,23 +191,23 @@
             <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
         </a>
 
-        <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.create') ? 'active' : '' }}">
+        <a href="{{ route('expedientes.index') }}">
             <i class="bi bi-folder-plus"></i> <span>Expedientes</span>
         </a>
 
-        <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.create') ? 'active' : '' }}">
+        <a href="{{ route('historia.index') }}" class="active">
             <i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span>
         </a>
 
-        <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
+        <a href="{{ route('pacientes.index') }}">
             <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
         </a>
 
-        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
+        <a href="{{ route('notas.index') }}">
             <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
         </a>
 
-        <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
+        <a href="{{ route('usuario.perfil') }}">
             <i class="bi bi-person-circle"></i> <span>Perfil</span>
         </a>
 
@@ -227,42 +219,77 @@
         </form>
     </aside>
 
-    <!-- Main content -->
     <div class="main-content">
         <header>
-            <h1>Panel del Sistema Clínico</h1>
-            <p class="welcome">Bienvenido a tu expediente clinico <strong>{{ Auth::user()->Nombre ?? 'Usuario' }}</strong></p>
+            <h1>Historias Clínicas</h1>
         </header>
 
-        <div class="container-fluid">
-            <div class="row g-4">
-                <!-- Pacientes -->
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="bi bi-person-bounding-box card-icon"></i>
-                            <h5 class="card-title">Total de Pacientes</h5>
-                            <p class="display-6">{{ $totalPacientes ?? 0 }}</p>
-                        </div>
-                    </div>
-                </div>
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
 
-                <!-- Expedientes -->
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="bi bi-clipboard-data card-icon"></i>
-                            <h5 class="card-title">Expedientes Clínicos</h5>
-                            <p class="display-6">{{ $totalExpedientes ?? 0 }}</p>
-                        </div>
-                    </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Listado de Historias Clínicas</span>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <!-- 🔵 Nuevo botón -->
+                    <a href="{{ route('historia.create') }}" class="btn btn-new">
+                        <i class="bi bi-plus-circle"></i> Crear nuevo historial
+                    </a>
+
+                    <!-- 🔍 Barra de búsqueda -->
+                    <form action="{{ route('historia.index') }}" method="GET" class="d-flex">
+                        <input type="text" name="search" class="form-control me-2" placeholder="Buscar por paciente..." value="{{ request('search') }}">
+                        <button type="submit" class="btn btn-light"><i class="bi bi-search"></i></button>
+                    </form>
                 </div>
             </div>
 
-            <footer>
-                <p>© {{ date('Y') }} Clínica Quirúrgica Téran — Sistema Clínico</p>
-            </footer>
+            <div class="card-body">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>Padecimiento Actual</th>
+                            <th>Exploración Física</th>
+                            <th>Estado Expediente</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($historias as $historia)
+                            <tr>
+                                <td>{{ $historia->Id_Historia }}</td>
+                                <td>{{ $historia->expediente->paciente->Nombre }} {{ $historia->expediente->paciente->Apellido }}</td>
+                                <td>{{ Str::limit($historia->Padecimiento_Actual, 50) }}</td>
+                                <td>{{ Str::limit($historia->Exploracion_Fisica, 50) }}</td>
+                                <td>{{ $historia->expediente->Estado_Expediente }}</td>
+                                <td>
+                                    <a href="{{ route('historia.show', $historia->Id_Historia) }}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <a href="{{ route('historia.edit', $historia->Id_Historia) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                    <form action="{{ route('historia.destroy', $historia->Id_Historia) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Desea eliminar esta historia clínica?')"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center">No se encontraron registros</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
+                <div class="d-flex justify-content-center">
+                    {{ $historias->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
         </div>
     </div>
+
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Paciente - Panel Admin</title>
+    <title>Editar Expediente Clínico - Sistema Clínico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -35,18 +35,11 @@
             <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
         </div>
 
-        <a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
-        <a href="{{ route('expedientes.index') }}"><i class="bi bi-folder-plus"></i> <span>Expedientes</span></a>
-        <a href="{{ route('historia.index') }}"><i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span></a>
-        <a href="{{ route('pacientes.index') }}" class="active"><i class="bi bi-person-lines-fill"></i> <span>Pacientes</span></a>
-        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
-    <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
-</a>
-<a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i> <span>Perfil</span>
-        </a>
-
-       
+        <a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="{{ route('expedientes.index') }}"><i class="bi bi-folder-plus"></i> Crear Expediente</a>
+        <a href="{{ route('historia.index') }}"><i class="bi bi-file-earmark-medical"></i> Historia Clínica</a>
+        <a href="{{ route('pacientes.index') }}"><i class="bi bi-person-lines-fill"></i> Pacientes</a>
+        <a href="{{ route('notas.index') }}"><i class="bi bi-journal-medical"></i> Nota Médica</a>
 
         <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
             @csrf
@@ -59,61 +52,51 @@
     <!-- Main content -->
     <div class="main-content">
         <header>
-            <h1>Editar Paciente</h1>
+            <h1>Editar Expediente</h1>
         </header>
 
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <!-- 🔧 FORMULARIO CORREGIDO -->
-        <form action="{{ route('pacientes.update', $paciente->Id_Paciente) }}" method="POST">
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('expedientes.update', $expediente->Id_Expediente) }}" method="POST">
             @csrf
             @method('PUT')
 
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label>Nombre</label>
-                    <input type="text" name="Nombre" value="{{ $paciente->Nombre }}" class="form-control" required>
-                </div>
-                <div class="col-md-6">
-                    <label>Apellido</label>
-                    <input type="text" name="Apellido" value="{{ $paciente->Apellido }}" class="form-control" required>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label>Sexo</label>
-                    <select name="Sexo" class="form-select">
-                        <option value="">Selecciona</option>
-                        <option {{ $paciente->Sexo == 'Masculino' ? 'selected' : '' }}>Masculino</option>
-                        <option {{ $paciente->Sexo == 'Femenino' ? 'selected' : '' }}>Femenino</option>
-                        <option {{ $paciente->Sexo == 'Otro' ? 'selected' : '' }}>Otro</option>
+                    <label>Paciente</label>
+                    <select name="Paciente_Id" class="form-select" required>
+                        @foreach($pacientes as $paciente)
+                            <option value="{{ $paciente->Id_Paciente }}" {{ $expediente->Paciente_Id == $paciente->Id_Paciente ? 'selected' : '' }}>
+                                {{ $paciente->Nombre }} {{ $paciente->Apellido }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label>Fecha de nacimiento</label>
-                    <input type="date" name="Fecha_Nacimiento" value="{{ $paciente->Fecha_Nacimiento }}" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label>Teléfono</label>
-                    <input type="text" name="Telefono" value="{{ $paciente->Telefono }}" class="form-control">
-                </div>
-            </div>
 
-            <div class="mb-3">
-                <label>Lugar de origen</label>
-                <input type="text" name="Lugar_Origen" value="{{ $paciente->Lugar_Origen }}" class="form-control">
-            </div>
-
-            <div class="mb-3">
-                <label>Contacto de emergencia</label>
-                <input type="text" name="Contacto_Emergencia" value="{{ $paciente->Contacto_Emergencia }}" class="form-control">
+                <div class="col-md-6">
+                    <label>Estado del Expediente</label>
+                    <select name="Estado_Expediente" class="form-select" required>
+                        <option value="Activo" {{ $expediente->Estado_Expediente == 'Activo' ? 'selected' : '' }}>Activo</option>
+                        <option value="Inactivo" {{ $expediente->Estado_Expediente == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
+                        <option value="Cerrado" {{ $expediente->Estado_Expediente == 'Cerrado' ? 'selected' : '' }}>Cerrado</option>
+                    </select>
+                </div>
             </div>
 
             <div class="d-flex justify-content-between">
-                <a href="{{ route('pacientes.index') }}" class="btn btn-secondary">
+                <a href="{{ route('expedientes.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
                 <button type="submit" class="btn btn-success">
@@ -122,6 +105,5 @@
             </div>
         </form>
     </div>
-
 </body>
 </html>

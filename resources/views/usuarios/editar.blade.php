@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del Sistema Clínico</title>
+    <title>Editar Perfil - Sistema Clínico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
@@ -22,7 +22,7 @@
             min-height: 100vh;
         }
 
-        /* === Sidebar === */
+        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: linear-gradient(180deg, #0d6efd, #003c99);
@@ -94,59 +94,50 @@
             background-color: #b52d3a;
         }
 
-        /* === Main content === */
+        /* Main content */
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 2rem;
             flex: 1;
         }
 
-        header {
-            margin-bottom: 2rem;
-        }
-
         header h1 {
             font-size: 1.8rem;
             font-weight: 700;
             color: #333;
-        }
-
-        header .welcome {
-            font-size: 1rem;
-            color: #666;
+            margin-bottom: 1rem;
         }
 
         .card {
             border: none;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        }
-
-        .card-body {
             padding: 2rem;
+            max-width: 650px;
+            margin: 0 auto;
+            background-color: #fff;
         }
 
-        .card-icon {
-            font-size: 2.8rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
+        label {
+            font-weight: 500;
+            color: #333;
         }
 
-        .card-title {
-            font-weight: 600;
-            color: #444;
+        input.form-control {
+            border-radius: 10px;
+            padding: 0.6rem;
         }
 
-        .display-6 {
-            font-size: 2.5rem;
-            color: #222;
-            font-weight: bold;
+        .btn-success {
+            border-radius: 10px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+        }
+
+        .btn-secondary {
+            border-radius: 10px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
         }
 
         footer {
@@ -156,7 +147,6 @@
             font-size: 0.9rem;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 position: relative;
@@ -194,7 +184,6 @@
             <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
         </div>
 
-        <!-- 🔗 Menú de navegación -->
         <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
         </a>
@@ -230,39 +219,58 @@
     <!-- Main content -->
     <div class="main-content">
         <header>
-            <h1>Panel del Sistema Clínico</h1>
-            <p class="welcome">Bienvenido a tu expediente clinico <strong>{{ Auth::user()->Nombre ?? 'Usuario' }}</strong></p>
+            <h1>Editar Perfil</h1>
         </header>
 
-        <div class="container-fluid">
-            <div class="row g-4">
-                <!-- Pacientes -->
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="bi bi-person-bounding-box card-icon"></i>
-                            <h5 class="card-title">Total de Pacientes</h5>
-                            <p class="display-6">{{ $totalPacientes ?? 0 }}</p>
-                        </div>
-                    </div>
+        <div class="card">
+            <form action="{{ route('usuario.actualizar') }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="mb-3">
+                    <label>Nombre</label>
+                    <input type="text" name="Nombre" class="form-control" value="{{ old('Nombre', $usuario->Nombre) }}" required>
                 </div>
 
-                <!-- Expedientes -->
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <i class="bi bi-clipboard-data card-icon"></i>
-                            <h5 class="card-title">Expedientes Clínicos</h5>
-                            <p class="display-6">{{ $totalExpedientes ?? 0 }}</p>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <label>Apellido</label>
+                    <input type="text" name="Apellido" class="form-control" value="{{ old('Apellido', $usuario->Apellido) }}" required>
                 </div>
-            </div>
 
-            <footer>
-                <p>© {{ date('Y') }} Clínica Quirúrgica Téran — Sistema Clínico</p>
-            </footer>
+                <div class="mb-3">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="Correo_Electronico" class="form-control" value="{{ old('Correo_Electronico', $usuario->Correo_Electronico) }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Especialidad</label>
+                    <input type="text" name="Especialidad" class="form-control" value="{{ old('Especialidad', $usuario->Especialidad) }}">
+                </div>
+
+                <div class="mb-3">
+                    <label>Contraseña (opcional)</label>
+                    <input type="password" name="Contraseña" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>Confirmar Contraseña</label>
+                    <input type="password" name="Contraseña_confirmation" class="form-control">
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success me-2">
+                        <i class="bi bi-check-circle"></i> Guardar Cambios
+                    </button>
+                    <a href="{{ route('usuario.perfil') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
+
+        <footer>
+            <p>© {{ date('Y') }} Clínica Quirúrgica Téran — Sistema Clínico</p>
+        </footer>
     </div>
 </body>
 </html>

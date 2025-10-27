@@ -3,62 +3,56 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Usuario;
 
 class UsuarioController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Muestra el perfil del usuario autenticado.
      */
     public function index()
     {
-        //
+        $usuario = Auth::user();
+        return view('usuarios.perfil', compact('usuario'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Muestra el formulario de edición del perfil.
      */
-    public function create()
+    public function edit()
     {
-        //
+        $usuario = Auth::user();
+        return view('usuarios.editar', compact('usuario'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Actualiza los datos del usuario autenticado.
      */
-    public function store(Request $request)
+    public function update(Request $request)
     {
-        //
-    }
+        $usuario = Auth::user();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        $request->validate([
+            'Nombre' => 'required|string|max:255',
+            'Apellido' => 'required|string|max:255',
+            'Correo_Electronico' => 'required|email|unique:usuario,Correo_Electronico,' . $usuario->Id_Usuario . ',Id_Usuario',
+            'Especialidad' => 'nullable|string|max:255',
+            'Contraseña' => 'nullable|string|min:6|confirmed',
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $usuario->Nombre = $request->Nombre;
+        $usuario->Apellido = $request->Apellido;
+        $usuario->Correo_Electronico = $request->Correo_Electronico;
+        $usuario->Especialidad = $request->Especialidad;
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        if ($request->filled('Contraseña')) {
+            $usuario->Contraseña = Hash::make($request->Contraseña);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $usuario->save();
+
+        return redirect()->route('usuario.perfil')->with('success', 'Perfil actualizado correctamente.');
     }
 }

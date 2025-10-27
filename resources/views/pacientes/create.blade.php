@@ -35,10 +35,14 @@
         </div>
 
         <a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
-        <a href="{{ route('expedientes.create') }}"><i class="bi bi-folder-plus"></i> <span>Crear Expediente</span></a>
-        <a href="{{ route('historia.create') }}"><i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span></a>
-        <a href="{{ route('pacientes.create') }}" class="active"><i class="bi bi-person-lines-fill"></i> <span>Pacientes</span></a>
-        
+        <a href="{{ route('expedientes.index') }}"><i class="bi bi-folder-plus"></i> <span>Expedientes</span></a>
+        <a href="{{ route('historia.index') }}"><i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span></a>
+        <a href="{{ route('pacientes.index') }}" class="active"><i class="bi bi-person-lines-fill"></i> <span>Pacientes</span></a>
+         <a href="{{ route('notas.index') }}"><i class="bi bi-journal-medical"></i> Nota Médica</a>
+        <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
+            
+            <i class="bi bi-person-circle"></i> <span>Perfil</span>
+        </a>
 
         <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
             @csrf
