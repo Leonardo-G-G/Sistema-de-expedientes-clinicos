@@ -10,29 +10,26 @@ class LoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login'); // tu vista de login
+        return view('auth.login');
     }
 
     public function login(Request $request)
     {
+        // Validamos los datos
         $credentials = $request->validate([
             'Correo_Electronico' => 'required|email',
             'Contraseña' => 'required|string',
         ]);
 
-        if (Auth::attempt(['Correo_Electronico' => $credentials['Correo_Electronico'], 'password' => $credentials['Contraseña']])) {
+        // Intentamos autenticar
+        if (Auth::attempt([
+            'Correo_Electronico' => $credentials['Correo_Electronico'],
+            'password' => $credentials['Contraseña']
+        ])) {
             $request->session()->regenerate();
 
-            $user = Auth::user();
-
-            // Redirección según el rol
-            if ($user->Rol_Id == 1) {
-                return redirect()->route('admin.dashboard');
-            } elseif ($user->Rol_Id == 2) {
-                return redirect()->route('medico.dashboard');
-            } else {
-                return redirect()->route('home');
-            }
+            return redirect()->route('dashboard') // Cambia a tu ruta principal
+                ->with('success', 'Bienvenido de nuevo.');
         }
 
         return back()->withErrors([
