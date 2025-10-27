@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         // Ejecutar los seeders en orden
         $this->call([
-            RolUsuarioSeeder::class,
+            UsuarioSeeder::class,
             PacienteSeeder::class,
         ]);
     }

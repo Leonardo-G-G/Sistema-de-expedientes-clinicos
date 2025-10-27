@@ -19,13 +19,13 @@ class PacienteController extends Controller
         ->orderBy('Id_Paciente', 'DESC')
         ->paginate(10);
 
-        return view('admin.pacientes.index', compact('pacientes'));
+        return view('pacientes.index', compact('pacientes'));
     }
 
     // ➕ Crear nuevo paciente
     public function create()
     {
-        return view('admin.pacientes.create');
+        return view('pacientes.create');
     }
 
     // 💾 Guardar paciente
@@ -44,7 +44,7 @@ class PacienteController extends Controller
     public function edit($Id_Paciente)
     {
         $paciente = Paciente::findOrFail($Id_Paciente);
-        return view('admin.pacientes.edit', compact('paciente'));
+        return view('pacientes.edit', compact('paciente'));
     }
 
     // 🔄 Actualizar paciente

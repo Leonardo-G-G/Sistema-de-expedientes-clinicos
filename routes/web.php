@@ -3,11 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpedienteController;
 use App\Http\Controllers\HistoriaClinicaController;
 use App\Http\Controllers\PacienteController;
-use App\Http\Controllers\NotaMedicaController; 
+use App\Http\Controllers\NotaMedicaController;
 
 // 🔐 Registro
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -21,28 +21,23 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // 🚀 Rutas protegidas por autenticación
 Route::middleware(['auth'])->group(function () {
 
-    // 🧭 Panel del administrador
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-
-    // ⚕️ Panel del médico
-    Route::get('/medico/dashboard', function () {
-        return view('medico.dashboard');
-    })->name('medico.dashboard');
+    // 🧭 Dashboard general (controlador dedicado)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // 📂 Expedientes Clínicos
-    Route::get('/admin/expedientes/crear', [ExpedienteController::class, 'create'])->name('expedientes.create');
-    Route::post('/admin/expedientes', [ExpedienteController::class, 'store'])->name('expedientes.store');
+    Route::get('/expedientes/crear', [ExpedienteController::class, 'create'])->name('expedientes.create');
+    Route::post('/expedientes', [ExpedienteController::class, 'store'])->name('expedientes.store');
 
     // 🩺 Historia Clínica
-    Route::get('/admin/historia/crear', [HistoriaClinicaController::class, 'create'])->name('historia.create');
-    Route::post('/admin/historia', [HistoriaClinicaController::class, 'store'])->name('historia.store');
+    Route::get('/historia/crear', [HistoriaClinicaController::class, 'create'])->name('historia.create');
+    Route::post('/historia', [HistoriaClinicaController::class, 'store'])->name('historia.store');
 
     // 🧾 Nota Médica
-    Route::get('/admin/notas/crear', [NotaMedicaController::class, 'create'])->name('notas.create');
-    Route::post('/admin/notas', [NotaMedicaController::class, 'store'])->name('notas.store');
+    Route::get('/notas/crear', [NotaMedicaController::class, 'create'])->name('notas.create');
+    Route::post('/notas', [NotaMedicaController::class, 'store'])->name('notas.store');
 
     // 👨‍⚕️ CRUD de Pacientes
-    Route::prefix('admin/pacientes')->name('pacientes.')->group(function () {
+    Route::prefix('pacientes')->name('pacientes.')->group(function () {
         Route::get('/', [PacienteController::class, 'index'])->name('index');
         Route::get('/crear', [PacienteController::class, 'create'])->name('create');
         Route::post('/', [PacienteController::class, 'store'])->name('store');

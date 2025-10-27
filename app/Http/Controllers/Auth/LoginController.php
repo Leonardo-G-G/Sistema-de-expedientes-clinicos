@@ -15,20 +15,21 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        // Validamos los datos
+        // Validar datos
         $credentials = $request->validate([
             'Correo_Electronico' => 'required|email',
             'Contraseña' => 'required|string',
         ]);
 
-        // Intentamos autenticar
+        // Intentar autenticación
         if (Auth::attempt([
             'Correo_Electronico' => $credentials['Correo_Electronico'],
             'password' => $credentials['Contraseña']
         ])) {
             $request->session()->regenerate();
 
-            return redirect()->route('dashboard') // Cambia a tu ruta principal
+            // ✅ Redirige al dashboard general
+            return redirect()->route('dashboard')
                 ->with('success', 'Bienvenido de nuevo.');
         }
 

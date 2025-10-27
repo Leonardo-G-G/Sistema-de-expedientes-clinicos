@@ -28,14 +28,14 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
-        <h2>Administrador</h2>
+        <h2>Sistema Clínico</h2>
 
         <div class="user-info">
             <i class="bi bi-person-circle"></i>
-            <p>{{ Auth::user()->Nombre ?? 'Admin' }}</p>
+            <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
         </div>
 
-        <a href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
+        <a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
         <a href="{{ route('expedientes.create') }}"><i class="bi bi-folder-plus"></i> <span>Crear Expediente</span></a>
         <a href="{{ route('historia.create') }}"><i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span></a>
         <a href="{{ route('pacientes.index') }}" class="active"><i class="bi bi-person-lines-fill"></i> <span>Pacientes</span></a>
@@ -43,7 +43,7 @@
     <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
 </a>
 
-        <a href="#"><i class="bi bi-hospital"></i> <span>Médicos</span></a>
+       
 
         <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
             @csrf

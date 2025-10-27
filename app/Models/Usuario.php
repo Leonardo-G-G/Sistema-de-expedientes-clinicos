@@ -34,4 +34,10 @@ class Usuario extends Authenticatable
     {
         return $this->Contraseña;
     }
+
+   
+    public function getNameAttribute()
+    {
+        return $this->Nombre . ' ' . $this->Apellido;
+    }
 }
