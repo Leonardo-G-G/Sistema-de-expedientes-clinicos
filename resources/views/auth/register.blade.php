@@ -68,19 +68,9 @@
                     <input id="password" type="password" class="form-control" name="Contraseña" required>
                 </div>
 
-                {{-- ⚙️ Importante: debe coincidir con "Contraseña_confirmation" --}}
                 <div class="mb-3">
                     <label for="password-confirm" class="form-label">Confirmar Contraseña</label>
                     <input id="password-confirm" type="password" class="form-control" name="Contraseña_confirmation" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="rol" class="form-label">Rol</label>
-                    <select id="rol" class="form-select" name="Rol_Id" required>
-                        <option value="">Seleccionar rol</option>
-                        <option value="1" {{ old('Rol_Id') == 1 ? 'selected' : '' }}>Administrador</option>
-                        <option value="2" {{ old('Rol_Id') == 2 ? 'selected' : '' }}>Médico</option>
-                    </select>
                 </div>
 
                 <div class="mb-3">
@@ -98,7 +88,8 @@
                 </div>
 
                 <p class="text-center mt-3 text-muted">
-                    ¿Ya tienes cuenta? <a href="{{ route('login') }}" class="text-primary">Iniciar sesión</a>
+                    ¿Ya tienes cuenta?
+                    <a href="{{ route('login') }}" class="text-primary">Iniciar sesión</a>
                 </p>
             </form>
 

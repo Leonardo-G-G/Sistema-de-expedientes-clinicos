@@ -10,11 +10,7 @@ return new class extends Migration {
         Schema::create('antecedentes_patologicos', function (Blueprint $table) {
             $table->id('Id_Antecedente_Patologico');
             $table->foreignId('Historia_Id')->constrained('historia_clinica', 'Id_Historia');
-            $table->text('Cirugias')->nullable();
-            $table->text('Alergias')->nullable();
-            $table->text('Hospitalizaciones')->nullable();
-            $table->text('Enfermedades_Infecciosas')->nullable();
-            $table->boolean('Transfusiones')->default(false);
+            $table->text('Descripcion')->nullable(); // Texto libre
         });
     }
 

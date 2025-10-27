@@ -18,15 +18,26 @@ class Usuario extends Authenticatable
         'Apellido',
         'Correo_Electronico',
         'Contraseña',
-        'Rol_Id',
         'Cedula_Profesional',
-        'Especialidad'
+        'Especialidad',
+        'Fecha_Registro',
     ];
 
-    protected $hidden = ['Contraseña', 'remember_token'];
+    protected $hidden = ['Contraseña'];
+
+    public function expedientes()
+    {
+        return $this->hasMany(Expediente::class, 'Medico_Id', 'Id_Usuario');
+    }
 
     public function getAuthPassword()
     {
         return $this->Contraseña;
+    }
+
+   
+    public function getNameAttribute()
+    {
+        return $this->Nombre . ' ' . $this->Apellido;
     }
 }

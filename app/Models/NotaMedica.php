@@ -14,14 +14,17 @@ class NotaMedica extends Model
         'Expediente_Id',
         'Fecha',
         'Hora',
-        'Diagnostico',
+        'Impresion_Diagnostica',
         'Tratamiento',
-        'Pronostico',
-        'Observacion'
+        'Observacion',
+        'Peso',
+        'Talla',
+        'Presion_Arterial',
+        'Frecuencia_Cardiaca',
     ];
 
     public function expediente()
     {
-        return $this->belongsTo(Expediente::class, 'Expediente_Id');
+        return $this->belongsTo(Expediente::class, 'Expediente_Id', 'Id_Expediente');
     }
 }

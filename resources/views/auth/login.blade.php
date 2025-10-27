@@ -18,34 +18,54 @@
     <div class="card">
         <div class="card-header">Iniciar Sesión</div>
         <div class="card-body p-4">
+
+            {{-- ✅ Mensaje de éxito al registrarse --}}
+            @if (session('success'))
+                <div class="alert alert-success text-center">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- ❌ Mensaje de error general --}}
+            @if (session('error'))
+                <div class="alert alert-danger text-center">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            {{-- ⚠️ Errores de validación --}}
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            {{-- 📝 Formulario --}}
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
-                <!-- Correo Electrónico -->
                 <div class="mb-3">
                     <label for="email" class="form-label">Correo Electrónico</label>
-                    <input id="email" type="email" class="form-control" name="Correo_Electronico" required autofocus>
+                    <input id="email" type="email" class="form-control" name="Correo_Electronico" value="{{ old('Correo_Electronico') }}" required autofocus>
                 </div>
 
-                <!-- Contraseña -->
                 <div class="mb-3">
                     <label for="password" class="form-label">Contraseña</label>
                     <input id="password" type="password" class="form-control" name="Contraseña" required>
-                </div>
-
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" name="remember" id="remember">
-                    <label class="form-check-label" for="remember">
-                        Recuérdame
-                    </label>
                 </div>
 
                 <div class="d-grid mb-2">
                     <button type="submit" class="btn btn-primary btn-lg rounded-3">Iniciar Sesión</button>
                 </div>
 
-                <p class="text-center"><a href="/password/reset" class="text-primary">¿Olvidaste tu contraseña?</a></p>
-                <p class="text-center text-muted mt-3">¿No tienes cuenta? <a href="/register" class="text-primary">Regístrate</a></p>
+                <p class="text-center text-muted mt-3">
+                    ¿No tienes cuenta?
+                    <a href="{{ route('register') }}" class="text-primary">Regístrate</a>
+                </p>
             </form>
         </div>
     </div>

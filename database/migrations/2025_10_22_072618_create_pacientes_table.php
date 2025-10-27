@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->id('Id_Paciente');
             $table->string('Nombre', 100);
             $table->string('Apellido', 100);
-            $table->enum('Sexo', ['Masculino','Femenino','Otro'])->nullable();
+            $table->enum('Sexo', ['Masculino', 'Femenino', 'Otro'])->nullable();
             $table->date('Fecha_Nacimiento')->nullable();
             $table->string('Lugar_Origen', 150)->nullable();
             $table->string('Telefono', 15)->nullable();

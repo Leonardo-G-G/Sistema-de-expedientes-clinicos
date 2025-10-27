@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->foreignId('Paciente_Id')->constrained('paciente', 'Id_Paciente');
             $table->foreignId('Medico_Id')->constrained('usuario', 'Id_Usuario');
             $table->timestamp('Fecha_Apertura')->useCurrent();
-            $table->enum('Estado_Expediente', ['Activo','Inactivo','Cerrado'])->default('Activo');
+            $table->enum('Estado_Expediente', ['Activo', 'Inactivo', 'Cerrado'])->default('Activo');
         });
     }
 
