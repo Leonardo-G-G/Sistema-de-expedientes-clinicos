@@ -12,9 +12,12 @@ return new class extends Migration {
             $table->foreignId('Expediente_Id')->constrained('expediente', 'Id_Expediente');
             $table->timestamp('Fecha')->useCurrent();
             $table->time('Hora')->nullable();
-            $table->text('Diagnostico')->nullable();
+            $table->float('Peso')->nullable();
+            $table->float('Talla')->nullable();
+            $table->string('Presion_Arterial', 20)->nullable();
+            $table->integer('Frecuencia_Cardiaca')->nullable();
+            $table->text('Impresion_Diagnostica')->nullable();
             $table->text('Tratamiento')->nullable();
-            $table->text('Pronostico')->nullable();
             $table->text('Observacion')->nullable();
         });
     }

@@ -2,63 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NotaMedica;
+use App\Models\Expediente;
 use Illuminate\Http\Request;
 
 class NotaMedicaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        // Trae todos los expedientes disponibles
+        $expedientes = Expediente::all();
+        return view('admin.notas.create', compact('expedientes'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
-    }
+        $request->validate([
+            'Expediente_Id' => 'required|exists:expediente,Id_Expediente',
+            'Fecha' => 'required|date',
+            'Hora' => 'required',
+            'Diagnostico' => 'required|string|max:255',
+            'Tratamiento' => 'required|string|max:255',
+            'Pronostico' => 'nullable|string|max:255',
+            'Observacion' => 'nullable|string|max:500'
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        NotaMedica::create($request->all());
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return back()->with('success', '✅ Nota médica registrada correctamente.');
     }
 }

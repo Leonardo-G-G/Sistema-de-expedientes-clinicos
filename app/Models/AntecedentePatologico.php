@@ -12,15 +12,11 @@ class AntecedentePatologico extends Model
 
     protected $fillable = [
         'Historia_Id',
-        'Cirugias',
-        'Alergias',
-        'Hospitalizaciones',
-        'Enfermedades_Infecciosas',
-        'Transfusiones'
+        'Descripcion',
     ];
 
-    public function historiaClinica()
+    public function historia()
     {
-        return $this->belongsTo(HistoriaClinica::class, 'Historia_Id');
+        return $this->belongsTo(HistoriaClinica::class, 'Historia_Id', 'Id_Historia');
     }
 }

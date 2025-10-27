@@ -17,11 +17,11 @@ class AntecedenteHeredofamiliar extends Model
         'Cancer',
         'Trastornos_Mentales',
         'Enfermedades_Cronicas',
-        'Otros'
+        'Otros',
     ];
 
-    public function historiaClinica()
+    public function historia()
     {
-        return $this->belongsTo(HistoriaClinica::class, 'Historia_Id');
+        return $this->belongsTo(HistoriaClinica::class, 'Historia_Id', 'Id_Historia');
     }
 }

@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->boolean('Diabetes')->default(false);
             $table->boolean('Hipertension')->default(false);
             $table->boolean('Cancer')->default(false);
-            $table->boolean('Trastornos_Mentales')->default(false);
             $table->text('Enfermedades_Cronicas')->nullable();
             $table->text('Otros')->nullable();
         });

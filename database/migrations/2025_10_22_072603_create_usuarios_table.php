@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->string('Apellido', 100);
             $table->string('Correo_Electronico', 100)->unique();
             $table->string('Contraseña', 255);
-            $table->foreignId('Rol_Id')->nullable()->constrained('rol_usuario', 'Id_Rol');
             $table->string('Cedula_Profesional', 50)->nullable();
             $table->string('Especialidad', 100)->nullable();
             $table->timestamp('Fecha_Registro')->useCurrent();

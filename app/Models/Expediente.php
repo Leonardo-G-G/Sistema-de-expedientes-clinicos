@@ -14,26 +14,26 @@ class Expediente extends Model
         'Paciente_Id',
         'Medico_Id',
         'Fecha_Apertura',
-        'Estado_Expediente'
+        'Estado_Expediente',
     ];
 
     public function paciente()
     {
-        return $this->belongsTo(Paciente::class, 'Paciente_Id');
+        return $this->belongsTo(Paciente::class, 'Paciente_Id', 'Id_Paciente');
     }
 
     public function medico()
     {
-        return $this->belongsTo(Usuario::class, 'Medico_Id');
+        return $this->belongsTo(Usuario::class, 'Medico_Id', 'Id_Usuario');
     }
 
     public function historiaClinica()
     {
-        return $this->hasOne(HistoriaClinica::class, 'Expediente_Id');
+        return $this->hasOne(HistoriaClinica::class, 'Expediente_Id', 'Id_Expediente');
     }
 
-    public function notasMedicas()
+    public function notas()
     {
-        return $this->hasMany(NotaMedica::class, 'Expediente_Id');
+        return $this->hasMany(NotaMedica::class, 'Expediente_Id', 'Id_Expediente');
     }
 }

@@ -18,11 +18,11 @@ class AntecedenteNoPatologico extends Model
         'Actividad_Fisica',
         'Tabaquismo',
         'Alcoholismo',
-        'Drogas'
+        'Drogas',
     ];
 
-    public function historiaClinica()
+    public function historia()
     {
-        return $this->belongsTo(HistoriaClinica::class, 'Historia_Id');
+        return $this->belongsTo(HistoriaClinica::class, 'Historia_Id', 'Id_Historia');
     }
 }

@@ -12,7 +12,6 @@ return new class extends Migration {
             $table->foreignId('Expediente_Id')->constrained('expediente', 'Id_Expediente');
             $table->text('Padecimiento_Actual')->nullable();
             $table->text('Exploracion_Fisica')->nullable();
-            $table->text('Diagnostico')->nullable();
         });
     }
 
