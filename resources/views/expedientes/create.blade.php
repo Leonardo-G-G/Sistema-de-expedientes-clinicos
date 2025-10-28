@@ -22,6 +22,7 @@
         .main-content { margin-left: var(--sidebar-width); padding: 2rem; flex: 1; }
         header h1 { font-size: 1.8rem; font-weight: 700; color: #333; margin-bottom: 2rem; }
         .form-control, .form-select { border-radius: 8px; }
+        #resultados { position: absolute; width: 100%; z-index: 1050; }
     </style>
 </head>
 <body>
@@ -29,36 +30,28 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <h2>Sistema Clínico</h2>
-
         <div class="user-info">
             <i class="bi bi-person-circle"></i>
             <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
         </div>
-
         <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
         </a>
-
         <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.create') ? 'active' : '' }}">
             <i class="bi bi-folder-plus"></i> <span>Crear Expediente</span>
         </a>
-
         <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.create') ? 'active' : '' }}">
             <i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span>
         </a>
-
         <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
             <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
         </a>
-
         <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
             <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
         </a>
-
         <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
             <i class="bi bi-person-circle"></i> <span>Perfil</span>
         </a>
-
         <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
             @csrf
             <button type="submit" class="logout-btn">
@@ -91,37 +84,23 @@
             @csrf
 
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <label>Paciente</label>
-                    <select name="Paciente_Id" class="form-select" required>
-                        <option value="">Seleccione un paciente</option>
-                        @foreach($pacientes as $paciente)
-                            <option value="{{ $paciente->Id_Paciente }}">{{ $paciente->Nombre }} {{ $paciente->Apellido }}</option>
-                        @endforeach
-                    </select>
+                <!-- Campo de búsqueda dinámica -->
+                <div class="col-md-6 position-relative">
+                    <label for="buscar_paciente">Paciente</label>
+                    <input type="text" id="buscar_paciente" class="form-control" placeholder="Escribe el nombre del paciente...">
+                    <input type="hidden" name="Paciente_Id" id="paciente_id" required>
+                    <div id="resultados" class="list-group mt-1 shadow-sm" style="display:none;"></div>
                 </div>
 
                 <div class="col-md-6">
                     <label>Médico responsable</label>
-                    <input type="text" class="form-control" value="{{ Auth::user()->Nombre }} {{ Auth::user()->Apellido }}" readonly>
+                    <input type="text" class="form-control" value="{{ Auth::user()->Nombre ?? Auth::user()->name }} {{ Auth::user()->Apellido ?? '' }}" readonly>
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label>Fecha de creación</label>
-                    <input type="date" name="Fecha_Apertura" value="{{ date('Y-m-d') }}" class="form-control" required>
-                </div>
-
-                <div class="col-md-6">
-                    <label>Estado del expediente</label>
-                    <select name="Estado_Expediente" class="form-select" required>
-                        <option value="Activo" selected>Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                        <option value="Cerrado">Cerrado</option>
-                    </select>
-                </div>
-            </div>
+            <!-- Campos ocultos para fecha y estado -->
+            <input type="hidden" name="Fecha_Apertura" value="{{ now() }}">
+            <input type="hidden" name="Estado_Expediente" value="Activo">
 
             <div class="d-flex justify-content-between">
                 <a href="{{ route('expedientes.index') }}" class="btn btn-secondary">
@@ -133,6 +112,53 @@
             </div>
         </form>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('buscar_paciente');
+        const lista = document.getElementById('resultados');
+        const hidden = document.getElementById('paciente_id');
+
+        input.addEventListener('input', function() {
+            const q = this.value.trim();
+
+            if (q.length < 2) {
+                lista.style.display = 'none';
+                return;
+            }
+
+            fetch(`/buscar-pacientes?q=${encodeURIComponent(q)}`)
+                .then(res => res.json())
+                .then(data => {
+                    lista.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(p => {
+                            const item = document.createElement('a');
+                            item.href = '#';
+                            item.classList.add('list-group-item', 'list-group-item-action');
+                            item.textContent = `${p.Nombre} ${p.Apellido}`;
+                            item.addEventListener('click', e => {
+                                e.preventDefault();
+                                input.value = `${p.Nombre} ${p.Apellido}`;
+                                hidden.value = p.Id_Paciente;
+                                lista.style.display = 'none';
+                            });
+                            lista.appendChild(item);
+                        });
+                        lista.style.display = 'block';
+                    } else {
+                        lista.style.display = 'none';
+                    }
+                });
+        });
+
+        document.addEventListener('click', e => {
+            if (!lista.contains(e.target) && e.target !== input) {
+                lista.style.display = 'none';
+            }
+        });
+    });
+    </script>
 
 </body>
 </html>

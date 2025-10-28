@@ -6,81 +6,101 @@ use App\Models\Expediente;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ExpedienteController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * 📋 Listado de expedientes
+     */
+    public function index()
     {
-        $search = $request->input('search');
-
-        $expedientes = Expediente::select('expediente.*')
-            ->leftJoin('paciente', 'expediente.Paciente_Id', '=', 'paciente.Id_Paciente')
-            ->with(['paciente', 'medico'])
-            ->where('expediente.Medico_Id', Auth::id())
-            ->when($search, function($query, $search) {
-                $query->where(DB::raw("CONCAT(paciente.Nombre, ' ', paciente.Apellido)"), 'like', "%{$search}%")
-                      ->orWhere('paciente.Nombre', 'like', "%{$search}%")
-                      ->orWhere('paciente.Apellido', 'like', "%{$search}%");
-            })
-            ->orderBy('expediente.Fecha_Apertura', 'desc')
+        $expedientes = Expediente::with(['paciente', 'medico'])
+            ->orderBy('Fecha_Apertura', 'DESC')
             ->paginate(10);
 
-        return view('expedientes.index', compact('expedientes', 'search'));
+        return view('expedientes.index', compact('expedientes'));
     }
 
+    /**
+     * ➕ Mostrar formulario de creación
+     */
     public function create()
     {
-        $pacientes = Paciente::all();
-        return view('expedientes.create', compact('pacientes'));
+        return view('expedientes.create');
     }
 
+    /**
+     * 💾 Guardar nuevo expediente
+     */
     public function store(Request $request)
     {
         $request->validate([
             'Paciente_Id' => 'required|exists:paciente,Id_Paciente',
-            'Estado_Expediente' => 'required|string|in:Activo,Inactivo,Cerrado',
         ]);
 
-        Expediente::create([
-            'Paciente_Id' => $request->Paciente_Id,
-            'Medico_Id' => Auth::id(),
-            'Estado_Expediente' => $request->Estado_Expediente,
-            'Fecha_Apertura' => now(),
-        ]);
+        $expediente = new Expediente();
+        $expediente->Paciente_Id = $request->Paciente_Id;
+        $expediente->Medico_Id = Auth::user()->Id_Usuario;
+        // Fecha y estado se asignan automáticamente en el modelo
+        $expediente->save();
 
-        return redirect()->route('expedientes.index')->with('success', '✅ Expediente creado exitosamente.');
+        return redirect()->route('expedientes.index')
+                         ->with('success', '✅ Expediente creado exitosamente.');
     }
 
-    public function edit($id)
+    /**
+     * ✏️ Mostrar formulario de edición (opcional)
+     */
+    public function edit($Id_Expediente)
     {
-        $expediente = Expediente::with('paciente')->findOrFail($id);
-        $pacientes = Paciente::all();
-        return view('expedientes.edit', compact('expediente', 'pacientes'));
+        $expediente = Expediente::findOrFail($Id_Expediente);
+        return view('expedientes.edit', compact('expediente'));
     }
 
-    public function update(Request $request, $id)
+    /**
+     * 🔄 Actualizar expediente (si necesitas editarlo)
+     */
+    public function update(Request $request, $Id_Expediente)
     {
-        $expediente = Expediente::findOrFail($id);
+        $expediente = Expediente::findOrFail($Id_Expediente);
 
         $request->validate([
             'Paciente_Id' => 'required|exists:paciente,Id_Paciente',
-            'Estado_Expediente' => 'required|string|in:Activo,Inactivo,Cerrado',
         ]);
 
-        $expediente->update([
-            'Paciente_Id' => $request->Paciente_Id,
-            'Estado_Expediente' => $request->Estado_Expediente,
-        ]);
+        $expediente->Paciente_Id = $request->Paciente_Id;
+        // No se cambia Fecha_Apertura ni Estado
+        $expediente->save();
 
-        return redirect()->route('expedientes.index')->with('success', '✅ Expediente actualizado exitosamente.');
+        return redirect()->route('expedientes.index')
+                         ->with('success', '✅ Expediente actualizado correctamente.');
     }
 
-    public function destroy($id)
+    /**
+     * ❌ Eliminar expediente
+     */
+    public function destroy($Id_Expediente)
     {
-        $expediente = Expediente::findOrFail($id);
+        $expediente = Expediente::findOrFail($Id_Expediente);
         $expediente->delete();
 
-        return back()->with('success', '🗑️ Expediente eliminado correctamente.');
+        return redirect()->route('expedientes.index')
+                         ->with('success', '🗑️ Expediente eliminado correctamente.');
+    }
+
+    /**
+     * 🔍 Buscar pacientes por nombre/apellido (para el formulario de expediente)
+     */
+    public function buscarPacientes(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        $pacientes = Paciente::where('Nombre', 'like', "%{$query}%")
+            ->orWhere('Apellido', 'like', "%{$query}%")
+            ->select('Id_Paciente', 'Nombre', 'Apellido')
+            ->limit(10)
+            ->get();
+
+        return response()->json($pacientes);
     }
 }

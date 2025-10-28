@@ -25,6 +25,9 @@ Route::middleware(['auth'])->group(function () {
     // 🧭 Dashboard general
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // 🔍 Búsqueda dinámica de pacientes (para expediente)
+    Route::get('/buscar-pacientes', [PacienteController::class, 'buscar'])->name('pacientes.buscar');
+
     // 📂 Expedientes Clínicos (CRUD completo)
     Route::prefix('expedientes')->name('expedientes.')->group(function () {
         Route::get('/', [ExpedienteController::class, 'index'])->name('index');
@@ -37,26 +40,25 @@ Route::middleware(['auth'])->group(function () {
 
     // 🩺 Historia Clínica (CRUD completo)
     Route::prefix('historia')->name('historia.')->group(function () {
-    Route::get('/', [HistoriaClinicaController::class, 'index'])->name('index');
-    Route::get('/crear', [HistoriaClinicaController::class, 'create'])->name('create');
-    Route::post('/', [HistoriaClinicaController::class, 'store'])->name('store');
-    Route::get('/{Id_Historia}', [HistoriaClinicaController::class, 'show'])->name('show'); // 👈 Agregada
-    Route::get('/{Id_Historia}/editar', [HistoriaClinicaController::class, 'edit'])->name('edit');
-    Route::put('/{Id_Historia}', [HistoriaClinicaController::class, 'update'])->name('update');
-    Route::delete('/{Id_Historia}', [HistoriaClinicaController::class, 'destroy'])->name('destroy');
-});
+        Route::get('/', [HistoriaClinicaController::class, 'index'])->name('index');
+        Route::get('/crear', [HistoriaClinicaController::class, 'create'])->name('create');
+        Route::post('/', [HistoriaClinicaController::class, 'store'])->name('store');
+        Route::get('/{Id_Historia}', [HistoriaClinicaController::class, 'show'])->name('show');
+        Route::get('/{Id_Historia}/editar', [HistoriaClinicaController::class, 'edit'])->name('edit');
+        Route::put('/{Id_Historia}', [HistoriaClinicaController::class, 'update'])->name('update');
+        Route::delete('/{Id_Historia}', [HistoriaClinicaController::class, 'destroy'])->name('destroy');
+    });
 
     // 🧾 Nota Médica
     Route::prefix('notas')->name('notas.')->group(function () {
-    Route::get('/', [NotaMedicaController::class, 'index'])->name('index');           // Listado
-    Route::get('/crear', [NotaMedicaController::class, 'create'])->name('create');    // Formulario crear
-    Route::post('/', [NotaMedicaController::class, 'store'])->name('store');          // Guardar
-    Route::get('/{Id_Nota}/editar', [NotaMedicaController::class, 'edit'])->name('edit');   // Editar
-    Route::put('/{Id_Nota}', [NotaMedicaController::class, 'update'])->name('update');      // Actualizar
-    Route::delete('/{Id_Nota}', [NotaMedicaController::class, 'destroy'])->name('destroy'); // Eliminar
-    Route::get('/{Id_Nota}', [NotaMedicaController::class, 'show'])->name('show');         // Ver detalle
-});
-
+        Route::get('/', [NotaMedicaController::class, 'index'])->name('index');
+        Route::get('/crear', [NotaMedicaController::class, 'create'])->name('create');
+        Route::post('/', [NotaMedicaController::class, 'store'])->name('store');
+        Route::get('/{Id_Nota}/editar', [NotaMedicaController::class, 'edit'])->name('edit');
+        Route::put('/{Id_Nota}', [NotaMedicaController::class, 'update'])->name('update');
+        Route::delete('/{Id_Nota}', [NotaMedicaController::class, 'destroy'])->name('destroy');
+        Route::get('/{Id_Nota}', [NotaMedicaController::class, 'show'])->name('show');
+    });
 
     // 👤 Perfil de usuario
     Route::prefix('perfil')->name('usuario.')->group(function () {

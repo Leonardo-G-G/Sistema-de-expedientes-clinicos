@@ -95,4 +95,20 @@ class PacienteController extends Controller
         return redirect()->route('pacientes.index')
                          ->with('success', '🗑️ Paciente eliminado correctamente.');
     }
+
+    /**
+     * 🔍 Buscar pacientes por nombre/apellido (para expediente)
+     */
+    public function buscar(Request $request)
+    {
+        $query = $request->get('q', ''); // "q" o "query", según cómo lo envíes desde AJAX
+
+        $pacientes = Paciente::where('Nombre', 'like', "%{$query}%")
+            ->orWhere('Apellido', 'like', "%{$query}%")
+            ->select('Id_Paciente', 'Nombre', 'Apellido')
+            ->limit(10)
+            ->get();
+
+        return response()->json($pacientes);
+    }
 }

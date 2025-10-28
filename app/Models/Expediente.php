@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Expediente extends Model
 {
@@ -16,6 +17,17 @@ class Expediente extends Model
         'Fecha_Apertura',
         'Estado_Expediente',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Antes de crear un expediente
+        static::creating(function ($expediente) {
+            $expediente->Fecha_Apertura = Carbon::now(); // Fecha y hora actual
+            $expediente->Estado_Expediente = 'Activo';  // Estado fijo
+        });
+    }
 
     public function paciente()
     {
