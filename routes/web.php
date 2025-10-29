@@ -12,22 +12,22 @@ use App\Http\Controllers\UsuarioController;
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS DE AUTENTICACIÓN
+| 🔐 RUTAS DE AUTENTICACIÓN
 |--------------------------------------------------------------------------
 */
 
-// 🔐 Registro
+// Registro
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
-// 🔐 Login / Logout
+// Login / Logout
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS PROTEGIDAS POR AUTENTICACIÓN
+| 🔒 RUTAS PROTEGIDAS POR AUTENTICACIÓN
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
@@ -48,9 +48,13 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{Id_Expediente}', [ExpedienteController::class, 'update'])->name('update');
         Route::delete('/{Id_Expediente}', [ExpedienteController::class, 'destroy'])->name('destroy');
 
-        // 🔍 Búsqueda dinámica de pacientes (para selects/autocompletado)
+        // 🔍 Búsqueda dinámica de pacientes (para crear expediente)
         Route::get('/buscar-pacientes', [ExpedienteController::class, 'buscarPacientes'])
             ->name('buscarPacientes');
+
+        // 🔍 Búsqueda de expedientes clínicos (para historia clínica u otros módulos)
+        Route::get('/buscar-expedientes', [ExpedienteController::class, 'buscarExpedientes'])
+            ->name('buscarExpedientes');
     });
 
     /*
@@ -107,19 +111,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/editar', [UsuarioController::class, 'edit'])->name('editar');
         Route::put('/', [UsuarioController::class, 'update'])->name('actualizar');
     });
-
-    /*
-    |--------------------------------------------------------------------------
-    | 🔍 Búsqueda de Expedientes para Historia Clínica
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/buscar-expedientes', [ExpedienteController::class, 'buscarExpedientes'])
-        ->name('buscarExpedientes');
 });
 
 /*
 |--------------------------------------------------------------------------
-| 🔄 Redirección por defecto
+| 🚪 Redirección por defecto
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {

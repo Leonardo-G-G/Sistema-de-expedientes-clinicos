@@ -6,6 +6,7 @@
     <title>Crear Expediente Clínico - Sistema Clínico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #0d6efd; --bg: #f5f7fa; --sidebar-width: 250px; }
         body { background-color: var(--bg); font-family: 'Segoe UI', sans-serif; display: flex; margin: 0; min-height: 100vh; }
@@ -66,18 +67,28 @@
             <h1>Crear Expediente Clínico</h1>
         </header>
 
+        <!-- ✅ Mensaje de éxito -->
         @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: "{{ session('success') }}",
+                    confirmButtonColor: '#198754'
+                });
+            </script>
         @endif
 
+        <!-- ⚠️ Mensajes de error -->
         @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    confirmButtonColor: '#dc3545'
+                });
+            </script>
         @endif
 
         <form action="{{ route('expedientes.store') }}" method="POST">
@@ -87,18 +98,20 @@
                 <!-- Campo de búsqueda dinámica -->
                 <div class="col-md-6 position-relative">
                     <label for="buscar_paciente">Paciente</label>
-                    <input type="text" id="buscar_paciente" class="form-control" placeholder="Escribe el nombre del paciente...">
+                    <input type="text" id="buscar_paciente" class="form-control" placeholder="Escribe el nombre o apellido del paciente...">
                     <input type="hidden" name="Paciente_Id" id="paciente_id" required>
                     <div id="resultados" class="list-group mt-1 shadow-sm" style="display:none;"></div>
                 </div>
 
                 <div class="col-md-6">
                     <label>Médico responsable</label>
-                    <input type="text" class="form-control" value="{{ Auth::user()->Nombre ?? Auth::user()->name }} {{ Auth::user()->Apellido ?? '' }}" readonly>
+                    <input type="text" class="form-control" 
+                           value="{{ Auth::user()->Nombre ?? Auth::user()->name }} {{ Auth::user()->Apellido ?? '' }}" 
+                           readonly>
                 </div>
             </div>
 
-            <!-- Campos ocultos para fecha y estado -->
+            <!-- Campos ocultos -->
             <input type="hidden" name="Fecha_Apertura" value="{{ now() }}">
             <input type="hidden" name="Estado_Expediente" value="Activo">
 
@@ -113,43 +126,50 @@
         </form>
     </div>
 
+    <!-- 🔎 Script búsqueda dinámica mejorada -->
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('buscar_paciente');
         const lista = document.getElementById('resultados');
         const hidden = document.getElementById('paciente_id');
+        let timeout = null;
 
         input.addEventListener('input', function() {
             const q = this.value.trim();
+            clearTimeout(timeout);
 
             if (q.length < 2) {
                 lista.style.display = 'none';
                 return;
             }
 
-            fetch(`/buscar-pacientes?q=${encodeURIComponent(q)}`)
-                .then(res => res.json())
-                .then(data => {
-                    lista.innerHTML = '';
-                    if (data.length > 0) {
-                        data.forEach(p => {
-                            const item = document.createElement('a');
-                            item.href = '#';
-                            item.classList.add('list-group-item', 'list-group-item-action');
-                            item.textContent = `${p.Nombre} ${p.Apellido}`;
-                            item.addEventListener('click', e => {
-                                e.preventDefault();
-                                input.value = `${p.Nombre} ${p.Apellido}`;
-                                hidden.value = p.Id_Paciente;
-                                lista.style.display = 'none';
+            timeout = setTimeout(() => {
+                // ✅ Ruta corregida usando route() de Blade
+                fetch(`{{ route('expedientes.buscarPacientes') }}?q=${encodeURIComponent(q)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        lista.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(p => {
+                                const item = document.createElement('a');
+                                item.href = '#';
+                                item.classList.add('list-group-item', 'list-group-item-action');
+                                item.textContent = `${p.Nombre} ${p.Apellido}`;
+                                item.addEventListener('click', e => {
+                                    e.preventDefault();
+                                    input.value = `${p.Nombre} ${p.Apellido}`;
+                                    hidden.value = p.Id_Paciente;
+                                    lista.style.display = 'none';
+                                });
+                                lista.appendChild(item);
                             });
-                            lista.appendChild(item);
-                        });
-                        lista.style.display = 'block';
-                    } else {
-                        lista.style.display = 'none';
-                    }
-                });
+                            lista.style.display = 'block';
+                        } else {
+                            lista.style.display = 'none';
+                        }
+                    })
+                    .catch(() => lista.style.display = 'none');
+            }, 300);
         });
 
         document.addEventListener('click', e => {
