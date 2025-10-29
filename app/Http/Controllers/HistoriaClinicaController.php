@@ -9,9 +9,6 @@ use App\Models\Expediente;
 
 class HistoriaClinicaController extends Controller
 {
-    /**
-     * 📋 Listado de historias clínicas con buscador avanzado
-     */
     public function index(Request $request)
     {
         $search = trim($request->input('search'));
@@ -19,12 +16,10 @@ class HistoriaClinicaController extends Controller
         $historias = HistoriaClinica::with('expediente.paciente')
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('expediente.paciente', function ($q) use ($search) {
-                    $q->where(function ($sub) use ($search) {
-                        $sub->where('Nombre', 'like', "%{$search}%")
-                            ->orWhere('Apellido', 'like', "%{$search}%")
-                            ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
-                            ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"]);
-                    });
+                    $q->where('Nombre', 'like', "%{$search}%")
+                      ->orWhere('Apellido', 'like', "%{$search}%")
+                      ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
+                      ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"]);
                 })
                 ->orWhere('Padecimiento_Actual', 'like', "%{$search}%")
                 ->orWhere('Exploracion_Fisica', 'like', "%{$search}%");
@@ -36,18 +31,12 @@ class HistoriaClinicaController extends Controller
         return view('historia.index', compact('historias', 'search'));
     }
 
-    /**
-     * ➕ Mostrar formulario de creación
-     */
     public function create()
     {
         $expedientes = Expediente::with('paciente')->orderByDesc('Id_Expediente')->get();
         return view('historia.create', compact('expedientes'));
     }
 
-    /**
-     * 💾 Guardar nueva historia clínica
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -56,48 +45,42 @@ class HistoriaClinicaController extends Controller
             'Exploracion_Fisica' => 'required|string',
         ]);
 
+        if (HistoriaClinica::where('Expediente_Id', $request->Expediente_Id)->exists()) {
+            return redirect()->back()
+                ->withErrors(['Ya existe una historia clínica para este expediente.'])
+                ->withInput();
+        }
+
         DB::transaction(function () use ($validated, $request) {
             $historia = HistoriaClinica::create($validated);
-
             $normalize = fn($v) => in_array(strtolower($v), ['sí', 'si', '1', 'true'], true) ? 1 : 0;
 
-            // 🔹 Antecedentes heredofamiliares
             if ($request->filled('heredofamiliares')) {
                 $data = $request->input('heredofamiliares');
-                foreach (['Diabetes', 'Hipertension', 'Cancer'] as $campo) {
-                    if (isset($data[$campo])) $data[$campo] = $normalize($data[$campo]);
-                }
+                foreach (['Diabetes','Hipertension','Cancer'] as $c) if(isset($data[$c])) $data[$c]=$normalize($data[$c]);
                 $historia->heredofamiliares()->create($data);
             }
 
-            // 🔹 Antecedentes patológicos
             if ($request->filled('patologicos')) {
                 $historia->patologicos()->create($request->input('patologicos'));
             }
 
-            // 🔹 Antecedentes no patológicos
             if ($request->filled('no_patologicos')) {
                 $data = $request->input('no_patologicos');
-                foreach (['Tabaquismo', 'Alcoholismo', 'Drogas'] as $campo) {
-                    if (isset($data[$campo])) $data[$campo] = $normalize($data[$campo]);
-                }
+                foreach(['Tabaquismo','Alcoholismo','Drogas'] as $c) if(isset($data[$c])) $data[$c]=$normalize($data[$c]);
                 $historia->noPatologicos()->create($data);
             }
 
-            // 🔹 Antecedentes ginecoobstétricos
             if ($request->filled('ginecoobstetricos')) {
                 $data = $request->input('ginecoobstetricos');
-                if (isset($data['Ciclos_Dolor'])) $data['Ciclos_Dolor'] = $normalize($data['Ciclos_Dolor']);
+                if(isset($data['Ciclos_Dolor'])) $data['Ciclos_Dolor']=$normalize($data['Ciclos_Dolor']);
                 $historia->ginecoobstetricos()->create($data);
             }
 
-            // 🔹 Nota Médica (pueden ser varias)
             if ($request->filled('nota_medica')) {
                 $notas = $request->input('nota_medica');
-                if (isset($notas['Peso']) || isset($notas['Talla'])) {
-                    $notas = [$notas];
-                }
-                foreach ($notas as $nota) {
+                if(isset($notas['Peso']) || isset($notas['Talla'])) $notas=[$notas];
+                foreach($notas as $nota) {
                     $nota['Fecha'] = now()->format('Y-m-d');
                     $nota['Hora'] = now()->format('H:i:s');
                     $historia->notaMedicas()->create($nota);
@@ -106,12 +89,9 @@ class HistoriaClinicaController extends Controller
         });
 
         return redirect()->route('historia.index')
-                         ->with('success', '✅ Historia clínica registrada correctamente.');
+            ->with('success', '✅ Historia clínica registrada correctamente.');
     }
 
-    /**
-     * ✏️ Mostrar formulario de edición
-     */
     public function edit($id)
     {
         $historia = HistoriaClinica::with([
@@ -128,9 +108,6 @@ class HistoriaClinicaController extends Controller
         return view('historia.edit', compact('historia', 'expedientes'));
     }
 
-    /**
-     * 🔄 Actualizar historia clínica
-     */
     public function update(Request $request, $id)
     {
         $historia = HistoriaClinica::findOrFail($id);
@@ -142,66 +119,40 @@ class HistoriaClinicaController extends Controller
 
         DB::transaction(function () use ($historia, $request, $validated) {
             $historia->update($validated);
+            $normalize = fn($v)=>in_array(strtolower($v),['sí','si','1','true'],true)?1:0;
 
-            $normalize = fn($v) => in_array(strtolower($v), ['sí', 'si', '1', 'true'], true) ? 1 : 0;
-
-            // 🔹 Actualizar antecedentes
-            foreach ([
-                'heredofamiliares' => ['Diabetes', 'Hipertension', 'Cancer'],
-                'no_patologicos' => ['Tabaquismo', 'Alcoholismo', 'Drogas'],
-                'ginecoobstetricos' => ['Ciclos_Dolor']
-            ] as $tipo => $campos) {
-                if ($request->filled($tipo)) {
-                    $data = $request->input($tipo);
-                    foreach ($campos as $campo) {
-                        if (isset($data[$campo])) $data[$campo] = $normalize($data[$campo]);
-                    }
-
-                    $relation = match ($tipo) {
-                        'no_patologicos' => 'noPatologicos',
-                        'ginecoobstetricos' => 'ginecoobstetricos',
-                        default => $tipo,
-                    };
-
-                    $historia->$relation()->updateOrCreate(
-                        ['Historia_Id' => $historia->Id_Historia],
-                        $data
-                    );
+            foreach([
+                'heredofamiliares'=>['Diabetes','Hipertension','Cancer'],
+                'no_patologicos'=>['Tabaquismo','Alcoholismo','Drogas'],
+                'ginecoobstetricos'=>['Ciclos_Dolor']
+            ] as $tipo=>$campos){
+                if($request->filled($tipo)){
+                    $data=$request->input($tipo);
+                    foreach($campos as $c) if(isset($data[$c])) $data[$c]=$normalize($data[$c]);
+                    $relation = $tipo==='no_patologicos'?'noPatologicos':($tipo==='ginecoobstetricos'?'ginecoobstetricos':$tipo);
+                    $historia->$relation()->updateOrCreate(['Historia_Id'=>$historia->Id_Historia],$data);
                 }
             }
 
-            // 🔹 Actualizar notas médicas
-            if ($request->filled('nota_medica')) {
-                $notas = $request->input('nota_medica');
-
-                if (isset($notas['Peso']) || isset($notas['Talla'])) {
-                    $notas = [$notas];
-                }
-
-                foreach ($notas as $nota) {
-                    $nota['Fecha'] = now()->format('Y-m-d');
-                    $nota['Hora'] = now()->format('H:i:s');
-
-                    $historia->notaMedicas()->updateOrCreate(
-                        ['Id_Nota' => $nota['Id_Nota'] ?? null],
-                        $nota
-                    );
+            if($request->filled('nota_medica')){
+                $notas=$request->input('nota_medica');
+                if(isset($notas['Peso']) || isset($notas['Talla'])) $notas=[$notas];
+                foreach($notas as $nota){
+                    $nota['Fecha']=now()->format('Y-m-d');
+                    $nota['Hora']=now()->format('H:i:s');
+                    $historia->notaMedicas()->updateOrCreate(['Id_Nota'=>$nota['Id_Nota'] ?? null],$nota);
                 }
             }
         });
 
         return redirect()->route('historia.index')
-                         ->with('success', '✅ Historia clínica actualizada correctamente.');
+            ->with('success','✅ Historia clínica actualizada correctamente.');
     }
 
-    /**
-     * ❌ Eliminar historia clínica y sus relaciones
-     */
     public function destroy($id)
     {
-        $historia = HistoriaClinica::findOrFail($id);
-
-        DB::transaction(function () use ($historia) {
+        $historia=HistoriaClinica::findOrFail($id);
+        DB::transaction(function() use($historia){
             $historia->ginecoobstetricos()->delete();
             $historia->heredofamiliares()->delete();
             $historia->noPatologicos()->delete();
@@ -209,17 +160,12 @@ class HistoriaClinicaController extends Controller
             $historia->notaMedicas()->delete();
             $historia->delete();
         });
-
-        return redirect()->route('historia.index')
-                         ->with('success', '🗑️ Historia clínica eliminada correctamente.');
+        return redirect()->route('historia.index')->with('success','🗑️ Historia clínica eliminada correctamente.');
     }
 
-    /**
-     * 👁️ Mostrar detalle completo de una historia clínica
-     */
     public function show($id)
     {
-        $historia = HistoriaClinica::with([
+        $historia=HistoriaClinica::with([
             'expediente.paciente',
             'ginecoobstetricos',
             'heredofamiliares',
@@ -229,12 +175,12 @@ class HistoriaClinicaController extends Controller
         ])->findOrFail($id);
 
         $relaciones = [
-            'heredofamiliares' => 'Heredofamiliares',
-            'noPatologicos' => 'No Patológicos',
-            'patologicos' => 'Patológicos',
-            'ginecoobstetricos' => 'Ginecoobstétricos',
+            'heredofamiliares'=>'Heredofamiliares',
+            'noPatologicos'=>'No Patológicos',
+            'patologicos'=>'Patológicos',
+            'ginecoobstetricos'=>'Ginecoobstétricos',
         ];
 
-        return view('historia.show', compact('historia', 'relaciones'));
+        return view('historia.show',compact('historia','relaciones'));
     }
 }
