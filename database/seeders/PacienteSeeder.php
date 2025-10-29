@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Paciente;
-use Carbon\Carbon;
 
 class PacienteSeeder extends Seeder
 {
@@ -12,9 +11,9 @@ class PacienteSeeder extends Seeder
     {
         $pacientes = [
             [
-                'Nombre' => 'Carlos',
+                'Nombre' => 'Carla',
                 'Apellido' => 'López',
-                'Sexo' => 'Masculino',
+                'Sexo' => 'Femenino',
                 'Fecha_Nacimiento' => '1990-05-14',
                 'Lugar_Origen' => 'Guadalajara',
                 'Telefono' => '3312345678',
@@ -30,9 +29,9 @@ class PacienteSeeder extends Seeder
                 'Contacto_Emergencia' => 'Pedro Hernández - 5545671234',
             ],
             [
-                'Nombre' => 'José',
+                'Nombre' => 'Josefina',
                 'Apellido' => 'Ramírez',
-                'Sexo' => 'Masculino',
+                'Sexo' => 'Femenino',
                 'Fecha_Nacimiento' => '2000-01-30',
                 'Lugar_Origen' => 'Puebla',
                 'Telefono' => '2224567890',
@@ -48,9 +47,9 @@ class PacienteSeeder extends Seeder
                 'Contacto_Emergencia' => 'Luis Gómez - 8181112233',
             ],
             [
-                'Nombre' => 'Miguel',
+                'Nombre' => 'Micaela',
                 'Apellido' => 'Torres',
-                'Sexo' => 'Masculino',
+                'Sexo' => 'Femenino',
                 'Fecha_Nacimiento' => '1975-07-04',
                 'Lugar_Origen' => 'Querétaro',
                 'Telefono' => '4423332211',

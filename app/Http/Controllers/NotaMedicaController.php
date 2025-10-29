@@ -72,12 +72,13 @@ class NotaMedicaController extends Controller
     }
 
     public function show($id)
-    {
-        $nota = NotaMedica::with('historiaClinica.expediente.paciente')->findOrFail($id);
-        $historia = $nota->historiaClinica; // 🔹 Se envía también la historia clínica a la vista
+{
+    $nota = NotaMedica::with('historiaClinica.expediente.paciente')->findOrFail($id);
+    $historia = $nota->historiaClinica;
 
-        return view('notas.show', compact('nota', 'historia'));
-    }
+    return view('notas.show', compact('nota', 'historia'));
+}
+
 
     public function edit($id)
     {
@@ -121,6 +122,25 @@ class NotaMedicaController extends Controller
 
         return redirect()->route('notas.index')->with('success', '✅ Nota médica actualizada correctamente.');
     }
+    public function buscarHistorias(Request $request)
+{
+    $q = $request->get('q');
+    $historias = HistoriaClinica::with('expediente.paciente')
+        ->whereHas('expediente.paciente', function($query) use ($q) {
+            $query->where('Nombre', 'like', "%{$q}%")
+                  ->orWhere('Apellido', 'like', "%{$q}%");
+        })
+        ->get()
+        ->map(function($h) {
+            return [
+                'Id_Historia' => $h->Id_Historia,
+                'Nombre' => $h->expediente->paciente->Nombre,
+                'Apellido' => $h->expediente->paciente->Apellido
+            ];
+        });
+    return response()->json($historias);
+}
+
 
     public function destroy($id)
     {

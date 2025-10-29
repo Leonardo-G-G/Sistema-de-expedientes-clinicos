@@ -40,9 +40,10 @@ class Expediente extends Model
         return $this->belongsTo(Usuario::class, 'Medico_Id', 'Id_Usuario');
     }
 
-    // 🔹 Un expediente tiene una o varias historias clínicas
-    public function historiasClinicas()
+    // 🔹 Un expediente tiene una sola historia clínica
+    public function historiaClinica()
     {
-        return $this->hasMany(HistoriaClinica::class, 'Expediente_Id', 'Id_Expediente');
+        return $this->hasOne(HistoriaClinica::class, 'Expediente_Id', 'Id_Expediente');
     }
+
 }

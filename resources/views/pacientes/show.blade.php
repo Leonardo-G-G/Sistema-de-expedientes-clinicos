@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nota Médica - {{ $historia->expediente->paciente->Nombre ?? 'Usuario' }}</title>
+    <title>Paciente - {{ $paciente->Nombre }} {{ $paciente->Apellido }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -46,6 +46,7 @@
         <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}"><i class="bi bi-folder-plus"></i> <span>Expedientes</span></a>
         <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}"><i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span></a>
         <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.*') ? 'active' : '' }}"><i class="bi bi-journal-medical"></i> <span>Notas Médicas</span></a>
+        <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}"><i class="bi bi-person-lines-fill"></i> <span>Pacientes</span></a>
         <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}"><i class="bi bi-person-circle"></i> <span>Perfil</span></a>
         <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
             @csrf
@@ -56,25 +57,29 @@
     <!-- Contenido principal -->
     <div class="main-content">
         <header>
-            <h1>Nota Médica de {{ $historia->expediente->paciente->Nombre ?? '---' }} {{ $historia->expediente->paciente->Apellido ?? '' }}</h1>
+            <h1>Paciente: {{ $paciente->Nombre }} {{ $paciente->Apellido }}</h1>
         </header>
 
         <div class="card mb-3">
             <div class="card-header">
-                <i class="bi bi-journal-medical"></i> Nota del {{ $nota->Fecha }} - {{ $nota->Hora }}
+                <i class="bi bi-person-lines-fill"></i> Información Personal
             </div>
             <div class="card-body">
-                <p><strong>Peso:</strong> {{ $nota->Peso ?? '---' }} kg | <strong>Talla:</strong> {{ $nota->Talla ?? '---' }} cm</p>
-                <p><strong>Presión Arterial:</strong> {{ $nota->Presion_Arterial ?? '---' }} | <strong>Frecuencia Cardíaca:</strong> {{ $nota->Frecuencia_Cardiaca ?? '---' }}</p>
-                <p><strong>Impresión Diagnóstica:</strong> {{ $nota->Impresion_Diagnostica ?? '---' }}</p>
-                <p><strong>Tratamiento:</strong> {{ $nota->Tratamiento ?? '---' }}</p>
-                <p><strong>Observación:</strong> {{ $nota->Observacion ?? '---' }}</p>
+                <p><strong>Nombre completo:</strong> {{ $paciente->Nombre }} {{ $paciente->Apellido }}</p>
+                <p><strong>Sexo:</strong> {{ $paciente->Sexo ?? '—' }}</p>
+                <p><strong>Edad:</strong> {{ $paciente->edad ?? '—' }} años</p>
+                <p><strong>Teléfono:</strong> {{ $paciente->Telefono ?? '—' }}</p>
+                <p><strong>Contacto de Emergencia:</strong> {{ $paciente->Contacto_Emergencia ?? '—' }}</p>
+                <p><strong>Lugar de Origen:</strong> {{ $paciente->Lugar_Origen ?? '—' }}</p>
+                <p><strong>Expediente:</strong> {{ $paciente->expediente->Id_Expediente ?? 'No registrado' }}</p>
             </div>
         </div>
 
-        <a href="{{ route('notas.index') }}" class="btn btn-secondary mt-3">
-            <i class="bi bi-arrow-left"></i> Volver a las notas médicas
+        <a href="{{ route('pacientes.index') }}" class="btn btn-secondary mt-3">
+            <i class="bi bi-arrow-left"></i> Volver a la lista de pacientes
         </a>
     </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

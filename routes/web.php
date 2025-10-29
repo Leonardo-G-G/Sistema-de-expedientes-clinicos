@@ -49,13 +49,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{Id_Expediente}', [ExpedienteController::class, 'destroy'])->name('destroy');
 
         // 🔍 Búsqueda dinámica de pacientes (para crear expediente)
-        Route::get('/buscar-pacientes', [ExpedienteController::class, 'buscarPacientes'])
-            ->name('buscarPacientes');
+        Route::get('/buscar-pacientes', [ExpedienteController::class, 'buscarPacientes'])->name('buscarPacientes');
 
-        // 🔍 Búsqueda de expedientes clínicos (para historia clínica u otros módulos)
-        Route::get('/buscar-expedientes', [ExpedienteController::class, 'buscarExpedientes'])
-            ->name('buscarExpedientes');
+        // 🔍 Búsqueda de expedientes clínicos (para historia clínica)
+        Route::get('/buscar-expedientes', [ExpedienteController::class, 'buscarExpedientes'])->name('buscarExpedientes');
     });
+
+    // ✅ Ruta correcta para buscar historias clínicas (fuera del prefijo "expedientes")
+    Route::get('/buscar-historias', [NotaMedicaController::class, 'buscarHistorias'])->name('buscarHistorias');
 
     /*
     |--------------------------------------------------------------------------
@@ -99,6 +100,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{Id_Paciente}/editar', [PacienteController::class, 'edit'])->name('edit');
         Route::put('/{Id_Paciente}', [PacienteController::class, 'update'])->name('update');
         Route::delete('/{Id_Paciente}', [PacienteController::class, 'destroy'])->name('destroy');
+        Route::get('/{Id_Paciente}', [PacienteController::class, 'show'])->name('show');
+
     });
 
     /*

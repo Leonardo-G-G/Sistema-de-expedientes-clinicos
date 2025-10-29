@@ -6,6 +6,7 @@
     <title>Registrar Nota Médica - Sistema Clínico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #0d6efd;
@@ -64,9 +65,6 @@
         .sidebar a.active {
             background-color: rgba(255,255,255,0.15);
         }
-        .sidebar i {
-            font-size: 1.3rem;
-        }
         .logout-btn {
             margin: 1.2rem;
             background-color: #dc3545;
@@ -75,181 +73,177 @@
             padding: 0.6rem 1rem;
             border-radius: 8px;
             font-weight: 500;
-            transition: background 0.3s;
-        }
-        .logout-btn:hover {
-            background-color: #b52d3a;
         }
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 2rem;
             flex: 1;
         }
-        header h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 2rem;
-        }
-        .form-control,
-        .form-select,
-        textarea {
-            border-radius: 8px;
+        #resultadosHistorias {
+            max-height: 250px;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <h2>Sistema Clínico</h2>
-
-        <div class="user-info">
-            <i class="bi bi-person-circle"></i>
-            <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
-        </div>
-
-        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
-        </a>
-
-        <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}">
-            <i class="bi bi-folder-plus"></i> <span>Expedientes</span>
-        </a>
-
-        <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
-            <i class="bi bi-file-earmark-medical"></i> <span>Historias Clínicas</span>
-        </a>
-
-        <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
-            <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
-        </a>
-
-        <a href="{{ route('notas.create') }}" class="{{ request()->routeIs('notas.create') ? 'active' : '' }}">
-            <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
-        </a>
-
-        <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i> <span>Perfil</span>
-        </a>
-
-        <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
-            @csrf
-            <button type="submit" class="logout-btn">
-                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-            </button>
-        </form>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <header>
-            <h1>Registrar Nota Médica</h1>
-        </header>
-
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <!-- Formulario de Nota Médica -->
-        <form action="{{ route('notas.store') }}" method="POST" class="card p-4 shadow-sm">
-            @csrf
-
-            @if(isset($historia) && $historia)
-                <!-- Si viene desde una historia específica -->
-                <input type="hidden" name="Historia_Id" value="{{ $historia->Id_Historia }}">
-
-                <div class="mb-3">
-                    <label class="form-label">Paciente</label>
-                    <input type="text" class="form-control" 
-                           value="{{ $historia->expediente->paciente->Nombre }} {{ $historia->expediente->paciente->Apellido }}" readonly>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Expediente</label>
-                    <input type="text" class="form-control" 
-                           value="{{ $historia->expediente->Numero_Expediente ?? $historia->Expediente_Id }}" readonly>
-                </div>
-            @else
-                <!-- Si no viene historia, mostrar selector -->
-                <div class="mb-3">
-                    <label class="form-label">Historia Clínica</label>
-                    <select name="Historia_Id" class="form-select" required>
-                        <option value="">Seleccione una historia clínica</option>
-                        @foreach ($historias as $item)
-                            <option value="{{ $item->Id_Historia }}">
-                                {{ $item->expediente->paciente->Nombre }} {{ $item->expediente->paciente->Apellido }}
-                                — Exp: {{ $item->expediente->Numero_Expediente ?? $item->Expediente_Id }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            @endif
-
-            <input type="hidden" name="Fecha" value="{{ now()->format('Y-m-d') }}">
-            <input type="hidden" name="Hora" value="{{ now()->format('H:i') }}">
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Peso (kg)</label>
-                    <input type="number" step="0.1" name="Peso" class="form-control" value="{{ old('Peso') }}">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Talla (m)</label>
-                    <input type="number" step="0.01" name="Talla" class="form-control" value="{{ old('Talla') }}">
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Presión Arterial</label>
-                    <input type="text" name="Presion_Arterial" class="form-control" value="{{ old('Presion_Arterial') }}">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Frecuencia Cardíaca</label>
-                    <input type="number" name="Frecuencia_Cardiaca" class="form-control" value="{{ old('Frecuencia_Cardiaca') }}">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Impresión Diagnóstica</label>
-                <textarea name="Impresion_Diagnostica" rows="3" class="form-control">{{ old('Impresion_Diagnostica') }}</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Tratamiento</label>
-                <textarea name="Tratamiento" rows="3" class="form-control">{{ old('Tratamiento') }}</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Observaciones</label>
-                <textarea name="Observacion" rows="3" class="form-control">{{ old('Observacion') }}</textarea>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <a href="{{ route('historia.index') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Volver
-                </a>
-                <button type="submit" class="btn btn-success">
-                    <i class="bi bi-save"></i> Guardar Nota Médica
-                </button>
-            </div>
-        </form>
+<aside class="sidebar">
+    <h2>Sistema Clínico</h2>
+    <div class="user-info">
+        <i class="bi bi-person-circle"></i>
+        <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}">
+        <i class="bi bi-folder-plus"></i> Expedientes
+    </a>
+    <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
+        <i class="bi bi-file-earmark-medical"></i> Historias Clínicas
+    </a>
+    <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
+        <i class="bi bi-person-lines-fill"></i> Pacientes
+    </a>
+    <a href="{{ route('notas.index') }}" class="active">
+        <i class="bi bi-journal-medical"></i> Nota Médica
+    </a>
+    <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
+        <i class="bi bi-person-circle"></i> Perfil
+    </a>
+
+    <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
+        @csrf
+        <button type="submit" class="logout-btn">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+        </button>
+    </form>
+</aside>
+
+<div class="main-content">
+    <header>
+        <h1>Registrar Nota Médica</h1>
+    </header>
+
+    <form action="{{ route('notas.store') }}" method="POST" class="card p-4 shadow-sm" id="formNota">
+        @csrf
+
+        <div class="mb-3 position-relative">
+            <label class="form-label">Buscar Historia Clínica</label>
+            <input type="text" id="buscar_historia" class="form-control" placeholder="Nombre o Apellido del paciente">
+            <input type="hidden" name="Historia_Id" id="Historia_Id" required>
+            <div id="resultadosHistorias" class="list-group position-absolute w-100 mt-1" style="z-index:1050; display:none;"></div>
+        </div>
+
+        <input type="hidden" name="Fecha" value="{{ now()->format('Y-m-d') }}">
+        <input type="hidden" name="Hora" value="{{ now()->format('H:i') }}">
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Peso (kg)</label>
+                <input type="number" step="0.1" name="Peso" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Talla (m)</label>
+                <input type="number" step="0.01" name="Talla" class="form-control">
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Presión Arterial</label>
+                <input type="text" name="Presion_Arterial" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Frecuencia Cardíaca</label>
+                <input type="number" name="Frecuencia_Cardiaca" class="form-control">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Impresión Diagnóstica</label>
+            <textarea name="Impresion_Diagnostica" rows="3" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tratamiento</label>
+            <textarea name="Tratamiento" rows="3" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Observaciones</label>
+            <textarea name="Observacion" rows="3" class="form-control"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ route('historia.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save"></i> Guardar Nota Médica
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('buscar_historia');
+    const lista = document.getElementById('resultadosHistorias');
+    const hidden = document.getElementById('Historia_Id');
+
+    input.addEventListener('input', async function() {
+        const q = this.value.trim();
+        if (q.length < 2) { lista.style.display = 'none'; return; }
+
+        try {
+            const res = await fetch(`/buscar-historias?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            lista.innerHTML = '';
+            if(data.length > 0) {
+                data.forEach(h => {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.classList.add('list-group-item', 'list-group-item-action');
+                    item.textContent = `${h.Nombre} ${h.Apellido} — Historia #${h.Id_Historia}`;
+                    item.addEventListener('click', ev => {
+                        ev.preventDefault();
+                        input.value = `${h.Nombre} ${h.Apellido}`;
+                        hidden.value = h.Id_Historia;
+                        lista.style.display = 'none';
+                    });
+                    lista.appendChild(item);
+                });
+                lista.style.display = 'block';
+            } else {
+                lista.innerHTML = '<div class="list-group-item text-muted">No se encontraron resultados</div>';
+                lista.style.display = 'block';
+            }
+        } catch (err) {
+            console.error(err);
+            lista.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', e => {
+        if (!lista.contains(e.target) && e.target !== input)
+            lista.style.display = 'none';
+    });
+
+    document.getElementById('formNota').addEventListener('submit', function(ev) {
+        if (!hidden.value) {
+            ev.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Selecciona una historia clínica',
+                text: 'Debes elegir una historia clínica antes de registrar la nota médica.'
+            });
+        }
+    });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

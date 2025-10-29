@@ -111,6 +111,15 @@ class PacienteController extends Controller
         return redirect()->route('pacientes.index')
                          ->with('success', '🗑️ Paciente eliminado correctamente.');
     }
+    /**
+     * 👁️ Mostrar información detallada de un paciente
+     */
+    public function show($Id_Paciente)
+    {
+        $paciente = Paciente::with('expediente')->findOrFail($Id_Paciente);
+        return view('pacientes.show', compact('paciente'));
+    }
+
 
     /**
      * 🔍 Buscar pacientes por nombre, apellido o expediente (para selects dinámicos o AJAX)
