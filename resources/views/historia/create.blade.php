@@ -224,9 +224,16 @@ Swal.fire({ icon: 'error', title: 'Error', html: `{!! implode('<br>', $errors->a
 </div>
 </div>
 
-<button type="submit" class="btn btn-primary mt-3">
-<i class="bi bi-save"></i> Registrar Historia Clínica
-</button>
+<!-- Botones Guardar y Volver -->
+<div class="d-flex justify-content-between mt-3">
+    <a href="{{ route('historia.index') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+    <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save"></i> Registrar Historia Clínica
+    </button>
+</div>
+
 </form>
 </div>
 
@@ -277,9 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(err){ console.error(err); lista.style.display='none'; }
     });
 
-    document.addEventListener('click', e=>{
-        if(!lista.contains(e.target) && e.target!==input) lista.style.display='none';
-    });
+    document.addEventListener('click', e=>{ if(!lista.contains(e.target) && e.target!==input) lista.style.display='none'; });
 
     document.getElementById('formHistoria').addEventListener('submit', function(ev){
         if(!hidden.value){

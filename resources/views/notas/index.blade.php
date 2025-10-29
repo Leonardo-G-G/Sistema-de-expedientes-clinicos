@@ -137,7 +137,7 @@
     </div>
 
     <footer class="mt-4">
-        <p>© {{ date('Y') }} Sistema Clínico - Todos los derechos reservados</p>
+        <p>© {{ date('Y') }} Clínica Quirúrgica Téran — Sistema Clínico</p>
     </footer>
 </div>
 
