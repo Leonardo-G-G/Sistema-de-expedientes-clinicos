@@ -35,11 +35,21 @@
             <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
         </div>
 
-        <a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a href="{{ route('expedientes.index') }}"><i class="bi bi-folder-plus"></i> Crear Expediente</a>
-        <a href="{{ route('historia.index') }}"><i class="bi bi-file-earmark-medical"></i> Historia Clínica</a>
-        <a href="{{ route('pacientes.index') }}"><i class="bi bi-person-lines-fill"></i> Pacientes</a>
-        <a href="{{ route('notas.index') }}"><i class="bi bi-journal-medical"></i> Nota Médica</a>
+        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}">
+            <i class="bi bi-folder2-open"></i> Expedientes
+        </a>
+        <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
+            <i class="bi bi-file-earmark-medical"></i> Historia Clínica
+        </a>
+        <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
+            <i class="bi bi-person-lines-fill"></i> Pacientes
+        </a>
+        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.*') ? 'active' : '' }}">
+            <i class="bi bi-journal-medical"></i> Nota Médica
+        </a>
 
         <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
             @csrf
@@ -55,6 +65,7 @@
             <h1>Editar Expediente</h1>
         </header>
 
+        <!-- Mensajes de éxito o error -->
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -69,14 +80,16 @@
             </div>
         @endif
 
-        <form action="{{ route('expedientes.update', $expediente->Id_Expediente) }}" method="POST">
+        <!-- Formulario -->
+        <form action="{{ route('expedientes.update', $expediente->Id_Expediente) }}" method="POST" class="card shadow p-4">
             @csrf
             @method('PUT')
 
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label>Paciente</label>
-                    <select name="Paciente_Id" class="form-select" required>
+                    <label for="Paciente_Id" class="form-label fw-semibold">Paciente</label>
+                    <select name="Paciente_Id" id="Paciente_Id" class="form-select" required>
+                        <option value="">Seleccione un paciente</option>
                         @foreach($pacientes as $paciente)
                             <option value="{{ $paciente->Id_Paciente }}" {{ $expediente->Paciente_Id == $paciente->Id_Paciente ? 'selected' : '' }}>
                                 {{ $paciente->Nombre }} {{ $paciente->Apellido }}
@@ -86,8 +99,8 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label>Estado del Expediente</label>
-                    <select name="Estado_Expediente" class="form-select" required>
+                    <label for="Estado_Expediente" class="form-label fw-semibold">Estado del Expediente</label>
+                    <select name="Estado_Expediente" id="Estado_Expediente" class="form-select" required>
                         <option value="Activo" {{ $expediente->Estado_Expediente == 'Activo' ? 'selected' : '' }}>Activo</option>
                         <option value="Inactivo" {{ $expediente->Estado_Expediente == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
                         <option value="Cerrado" {{ $expediente->Estado_Expediente == 'Cerrado' ? 'selected' : '' }}>Cerrado</option>
@@ -95,7 +108,7 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between mt-4">
                 <a href="{{ route('expedientes.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
@@ -105,5 +118,6 @@
             </div>
         </form>
     </div>
+
 </body>
 </html>

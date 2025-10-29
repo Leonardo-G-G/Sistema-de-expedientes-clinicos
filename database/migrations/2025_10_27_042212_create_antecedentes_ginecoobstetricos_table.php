@@ -9,11 +9,11 @@ return new class extends Migration {
     {
         Schema::create('antecedentes_ginecoobstetricos', function (Blueprint $table) {
             $table->id('Id_Antecedente_Gineco');
-            $table->foreignId('Historia_Id')->constrained('historia_clinica', 'Id_Historia')->onDelete('cascade');
-
+            $table->foreignId('Historia_Id')
+                ->constrained('historia_clinica', 'Id_Historia')
+                ->onDelete('cascade');
             $table->integer('Menarca_Edad')->nullable()->comment('Edad en la que comenzó la menstruación');
             $table->string('Tipo_Ciclo', 100)->nullable()->comment('Ej. 28x4, 30x3');
-            $table->boolean('Ciclos_Regulares')->nullable();
             $table->boolean('Ciclos_Dolor')->nullable();
             $table->date('Ultima_Regla')->nullable();
             $table->integer('Inicio_Vida_Sexual')->nullable()->comment('Edad de inicio de vida sexual');

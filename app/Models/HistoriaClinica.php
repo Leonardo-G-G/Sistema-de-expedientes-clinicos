@@ -3,10 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\AntecedenteGinecoobstetrico;
-use App\Models\AntecedenteHeredofamiliar;
-use App\Models\AntecedenteNoPatologico;
-use App\Models\AntecedentePatologico;
 
 class HistoriaClinica extends Model
 {
@@ -20,13 +16,19 @@ class HistoriaClinica extends Model
         'Exploracion_Fisica',
     ];
 
-    // Relación con expediente
+    // 🔹 Relación con expediente (una historia pertenece a un expediente)
     public function expediente()
     {
         return $this->belongsTo(Expediente::class, 'Expediente_Id', 'Id_Expediente');
     }
 
-    // ✅ Cada historia tiene un solo conjunto de antecedentes, no varios
+    // 🔹 Una historia clínica puede tener varias notas médicas
+    public function notaMedicas()
+    {
+        return $this->hasMany(NotaMedica::class, 'Historia_Id', 'Id_Historia');
+    }
+
+    // 🔹 Antecedentes (solo uno por historia)
     public function ginecoobstetricos()
     {
         return $this->hasOne(AntecedenteGinecoobstetrico::class, 'Historia_Id', 'Id_Historia');

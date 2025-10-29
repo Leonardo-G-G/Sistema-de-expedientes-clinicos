@@ -28,7 +28,12 @@
         .btn-new { background-color: var(--primary); color: white; font-weight: 500; border-radius: 10px; padding: 0.6rem 1rem; transition: background 0.3s; }
         .btn-new:hover { background-color: #084298; color: white; }
         footer { margin-top: 3rem; text-align: center; color: #666; font-size: 0.9rem; }
-        @media (max-width: 768px) { .sidebar { position: relative; width: 100%; flex-direction: row; justify-content: space-around; height: auto; box-shadow: none; } .main-content { margin-left: 0; padding: 1rem; } .sidebar h2, .user-info { display: none; } .sidebar a span { display: none; } }
+        @media (max-width: 768px) {
+            .sidebar { position: relative; width: 100%; flex-direction: row; justify-content: space-around; height: auto; box-shadow: none; }
+            .main-content { margin-left: 0; padding: 1rem; }
+            .sidebar h2, .user-info { display: none; }
+            .sidebar a span { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -40,7 +45,6 @@
         <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
     </div>
 
-    <!-- Menú -->
     <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
     <a href="{{ route('expedientes.index') }}"><i class="bi bi-folder-plus"></i> <span>Expedientes</span></a>
     <a href="{{ route('historia.index') }}"><i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span></a>
@@ -64,13 +68,12 @@
     @endif
 
     <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Listado de Notas Médicas</span>
-            <div class="d-flex align-items-center gap-2">
+        <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+            <span class="fw-semibold">Listado de Notas Médicas</span>
+            <div class="d-flex flex-column flex-md-row align-items-center gap-2">
                 <a href="{{ route('notas.create') }}" class="btn btn-new"><i class="bi bi-plus-circle"></i> Nueva Nota</a>
 
-                <!-- Búsqueda por paciente y fecha -->
-                <form action="{{ route('notas.index') }}" method="GET" class="d-flex gap-2">
+                <form action="{{ route('notas.index') }}" method="GET" class="d-flex flex-wrap gap-2">
                     <input type="text" name="search" class="form-control" placeholder="Buscar por paciente..." value="{{ request('search') }}">
                     <input type="date" name="fecha" class="form-control" value="{{ request('fecha') }}">
                     <button type="submit" class="btn btn-light"><i class="bi bi-search"></i></button>
@@ -79,52 +82,63 @@
         </div>
 
         <div class="card-body">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Paciente</th>
-                        <th>Fecha</th>
-                        <th>Peso</th>
-                        <th>Talla</th>
-                        <th>Presión</th>
-                        <th>Frecuencia Cardíaca</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($notas as $nota)
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <td>{{ $nota->Id_Nota }}</td>
-                            <td>{{ $nota->expediente->paciente->Nombre }} {{ $nota->expediente->paciente->Apellido }}</td>
-                            <td>{{ $nota->Fecha }} {{ $nota->Hora ?? '' }}</td>
-                            <td>{{ $nota->Peso ?? '-' }}</td>
-                            <td>{{ $nota->Talla ?? '-' }}</td>
-                            <td>{{ $nota->Presion_Arterial ?? '-' }}</td>
-                            <td>{{ $nota->Frecuencia_Cardiaca ?? '-' }}</td>
-                            <td>
-                                <a href="{{ route('notas.show', $nota->Id_Nota) }}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
-                                <a href="{{ route('notas.edit', $nota->Id_Nota) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
-                                <form action="{{ route('notas.destroy', $nota->Id_Nota) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Desea eliminar esta nota médica?')"><i class="bi bi-trash"></i></button>
-                                </form>
-                            </td>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>Fecha</th>
+                            <th>Peso</th>
+                            <th>Talla</th>
+                            <th>Presión</th>
+                            <th>Frecuencia Cardíaca</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center">No se encontraron registros</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse($notas as $nota)
+                            <tr>
+                                <td>{{ $nota->Id_Nota }}</td>
+                                <td>
+                                    {{ optional(optional($nota->historiaClinica)->expediente->paciente)->Nombre ?? '-' }}
+                                    {{ optional(optional($nota->historiaClinica)->expediente->paciente)->Apellido ?? '' }}
+                                </td>
+                                <td>{{ $nota->Fecha }} {{ $nota->Hora ?? '' }}</td>
+                                <td>{{ $nota->Peso ?? '-' }}</td>
+                                <td>{{ $nota->Talla ?? '-' }}</td>
+                                <td>{{ $nota->Presion_Arterial ?? '-' }}</td>
+                                <td>{{ $nota->Frecuencia_Cardiaca ?? '-' }}</td>
+                                <td class="text-center">
+                                    <a href="{{ route('notas.show', $nota->Id_Nota) }}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
+                                    <a href="{{ route('notas.edit', $nota->Id_Nota) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                    <form action="{{ route('notas.destroy', $nota->Id_Nota) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Desea eliminar esta nota médica?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-3">No se encontraron registros</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
             <div class="d-flex justify-content-center">
                 {{ $notas->appends(request()->all())->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
+
+    <footer class="mt-4">
+        <p>© {{ date('Y') }} Sistema Clínico - Todos los derechos reservados</p>
+    </footer>
 </div>
 
 </body>

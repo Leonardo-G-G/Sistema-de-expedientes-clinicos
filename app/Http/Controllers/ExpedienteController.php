@@ -10,15 +10,28 @@ use Illuminate\Support\Facades\Auth;
 class ExpedienteController extends Controller
 {
     /**
-     * 📋 Listado de expedientes
+     * 📋 Listado de expedientes con buscador avanzado
      */
-    public function index()
+    public function index(Request $request)
     {
-        $expedientes = Expediente::with(['paciente', 'medico'])
-            ->orderBy('Fecha_Apertura', 'DESC')
-            ->paginate(10);
+        $search = trim($request->input('search'));
 
-        return view('expedientes.index', compact('expedientes'));
+        $expedientes = Expediente::with(['paciente', 'medico'])
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('paciente', function ($q) use ($search) {
+                    $q->where(function ($sub) use ($search) {
+                        $sub->where('Nombre', 'like', "%{$search}%")
+                            ->orWhere('Apellido', 'like', "%{$search}%")
+                            ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
+                            ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"]);
+                    });
+                });
+            })
+            ->orderByDesc('Fecha_Apertura')
+            ->paginate(10)
+            ->appends(['search' => $search]);
+
+        return view('expedientes.index', compact('expedientes', 'search'));
     }
 
     /**
@@ -26,7 +39,8 @@ class ExpedienteController extends Controller
      */
     public function create()
     {
-        return view('expedientes.create');
+        $pacientes = Paciente::orderBy('Apellido', 'asc')->get();
+        return view('expedientes.create', compact('pacientes'));
     }
 
     /**
@@ -40,8 +54,9 @@ class ExpedienteController extends Controller
 
         $expediente = new Expediente();
         $expediente->Paciente_Id = $request->Paciente_Id;
-        $expediente->Medico_Id = Auth::user()->Id_Usuario;
-        // Fecha y estado se asignan automáticamente en el modelo
+        $expediente->Medico_Id = Auth::user()->Id_Usuario ?? null;
+        $expediente->Estado_Expediente = 'Activo';
+        $expediente->Fecha_Apertura = now();
         $expediente->save();
 
         return redirect()->route('expedientes.index')
@@ -49,16 +64,18 @@ class ExpedienteController extends Controller
     }
 
     /**
-     * ✏️ Mostrar formulario de edición (opcional)
+     * ✏️ Mostrar formulario de edición
      */
     public function edit($Id_Expediente)
     {
         $expediente = Expediente::findOrFail($Id_Expediente);
-        return view('expedientes.edit', compact('expediente'));
+        $pacientes = Paciente::orderBy('Apellido', 'asc')->get();
+
+        return view('expedientes.edit', compact('expediente', 'pacientes'));
     }
 
     /**
-     * 🔄 Actualizar expediente (si necesitas editarlo)
+     * 🔄 Actualizar expediente
      */
     public function update(Request $request, $Id_Expediente)
     {
@@ -66,10 +83,11 @@ class ExpedienteController extends Controller
 
         $request->validate([
             'Paciente_Id' => 'required|exists:paciente,Id_Paciente',
+            'Estado_Expediente' => 'required|in:Activo,Inactivo,Cerrado',
         ]);
 
         $expediente->Paciente_Id = $request->Paciente_Id;
-        // No se cambia Fecha_Apertura ni Estado
+        $expediente->Estado_Expediente = $request->Estado_Expediente;
         $expediente->save();
 
         return redirect()->route('expedientes.index')
@@ -89,18 +107,37 @@ class ExpedienteController extends Controller
     }
 
     /**
-     * 🔍 Buscar pacientes por nombre/apellido (para el formulario de expediente)
+     * 🔍 Buscar expedientes por nombre o apellido del paciente (para autocompletar)
      */
-    public function buscarPacientes(Request $request)
+    public function buscarExpedientes(Request $request)
     {
-        $query = $request->get('q', '');
+        $query = trim($request->get('q', ''));
 
-        $pacientes = Paciente::where('Nombre', 'like', "%{$query}%")
-            ->orWhere('Apellido', 'like', "%{$query}%")
-            ->select('Id_Paciente', 'Nombre', 'Apellido')
-            ->limit(10)
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $expedientes = Expediente::with('paciente')
+            ->whereHas('paciente', function ($q) use ($query) {
+                $q->where('Nombre', 'like', "%{$query}%")
+                  ->orWhere('Apellido', 'like', "%{$query}%")
+                  ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$query}%"])
+                  ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$query}%"]);
+            })
             ->get();
 
-        return response()->json($pacientes);
+        // 🔹 Formato compatible con el frontend
+        $resultados = $expedientes->map(function ($e) {
+            return [
+                'Id_Expediente' => $e->Id_Expediente,
+                'Nombre' => $e->paciente->Nombre ?? '',
+                'Apellido' => $e->paciente->Apellido ?? '',
+                'Fecha_Apertura' => $e->Fecha_Apertura
+                    ? date('Y-m-d', strtotime($e->Fecha_Apertura))
+                    : '',
+            ];
+        });
+
+        return response()->json($resultados);
     }
 }

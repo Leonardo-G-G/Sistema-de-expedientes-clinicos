@@ -22,30 +22,27 @@ class Expediente extends Model
     {
         parent::boot();
 
-        // Antes de crear un expediente
         static::creating(function ($expediente) {
-            $expediente->Fecha_Apertura = Carbon::now(); // Fecha y hora actual
-            $expediente->Estado_Expediente = 'Activo';  // Estado fijo
+            $expediente->Fecha_Apertura = Carbon::now();
+            $expediente->Estado_Expediente = $expediente->Estado_Expediente ?? 'Activo';
         });
     }
 
+    // 🔹 Un expediente pertenece a un paciente
     public function paciente()
     {
         return $this->belongsTo(Paciente::class, 'Paciente_Id', 'Id_Paciente');
     }
 
+    // 🔹 Un expediente pertenece a un médico
     public function medico()
     {
         return $this->belongsTo(Usuario::class, 'Medico_Id', 'Id_Usuario');
     }
 
-    public function historiaClinica()
+    // 🔹 Un expediente tiene una o varias historias clínicas
+    public function historiasClinicas()
     {
-        return $this->hasOne(HistoriaClinica::class, 'Expediente_Id', 'Id_Expediente');
-    }
-
-    public function notaMedicas()
-    {
-        return $this->hasMany(NotaMedica::class, 'Expediente_Id', 'Id_Expediente');
+        return $this->hasMany(HistoriaClinica::class, 'Expediente_Id', 'Id_Expediente');
     }
 }

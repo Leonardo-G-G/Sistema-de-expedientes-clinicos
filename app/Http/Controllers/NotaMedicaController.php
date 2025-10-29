@@ -3,54 +3,45 @@
 namespace App\Http\Controllers;
 
 use App\Models\NotaMedica;
-use App\Models\Expediente;
+use App\Models\HistoriaClinica;
 use Illuminate\Http\Request;
 
 class NotaMedicaController extends Controller
 {
-    /**
-     * Listado de notas médicas con búsqueda por paciente y fecha, con paginación.
-     */
     public function index(Request $request)
     {
-        $search = $request->input('search'); // nombre o apellido
-        $fecha  = $request->input('fecha');  // fecha de nota
+        $search = $request->input('search');
+        $fecha  = $request->input('fecha');
 
-        $notas = NotaMedica::with('expediente.paciente')
-            ->when($search, function($query, $search) {
-                $query->whereHas('expediente.paciente', function($q) use ($search) {
-                    $q->where('Nombre', 'like', "%{$search}%")
-                      ->orWhere('Apellido', 'like', "%{$search}%");
+        $notas = NotaMedica::with('historiaClinica.expediente.paciente')
+            ->when($search, function ($query, $search) {
+                $query->whereHas('historiaClinica.expediente.paciente', function ($q) use ($search) {
+                    $q->whereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
+                        ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"]);
                 });
             })
-            ->when($fecha, function($query, $fecha) {
-                $query->where('Fecha', $fecha);
+            ->when($fecha, function ($query, $fecha) {
+                $query->whereDate('Fecha', $fecha);
             })
             ->orderBy('Fecha', 'desc')
             ->paginate(10)
-            ->appends($request->all()); // conserva los filtros en la paginación
+            ->appends($request->all());
 
         return view('notas.index', compact('notas', 'search', 'fecha'));
     }
 
-    /**
-     * Formulario para crear una nueva nota médica.
-     */
-    public function create()
+    public function create($id = null)
     {
-        $expedientes = Expediente::all();
-        return view('notas.create', compact('expedientes'));
+        $historia = $id ? HistoriaClinica::with('expediente.paciente')->findOrFail($id) : null;
+        $historias = HistoriaClinica::with('expediente.paciente')->get();
+
+        return view('notas.create', compact('historia', 'historias'));
     }
 
-    /**
-     * Guardar nueva nota médica.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'Expediente_Id' => 'required|exists:expediente,Id_Expediente',
-            'Fecha' => 'required|date',
-            'Hora' => 'required',
+            'Historia_Id' => 'required|exists:historia_clinica,Id_Historia',
             'Peso' => 'nullable|numeric',
             'Talla' => 'nullable|numeric',
             'Presion_Arterial' => 'nullable|string|max:20',
@@ -60,52 +51,48 @@ class NotaMedicaController extends Controller
             'Observacion' => 'nullable|string',
         ]);
 
-        NotaMedica::create([
-            'Expediente_Id' => $request->Expediente_Id,
-            'Fecha' => $request->Fecha,
-            'Hora' => $request->Hora,
-            'Peso' => $request->Peso,
-            'Talla' => $request->Talla,
-            'Presion_Arterial' => $request->Presion_Arterial,
-            'Frecuencia_Cardiaca' => $request->Frecuencia_Cardiaca,
-            'Impresion_Diagnostica' => $request->Impresion_Diagnostica,
-            'Tratamiento' => $request->Tratamiento,
-            'Observacion' => $request->Observacion,
-        ]);
+        NotaMedica::create(array_merge(
+            $request->only([
+                'Historia_Id',
+                'Peso',
+                'Talla',
+                'Presion_Arterial',
+                'Frecuencia_Cardiaca',
+                'Impresion_Diagnostica',
+                'Tratamiento',
+                'Observacion',
+            ]),
+            [
+                'Fecha' => now()->toDateString(),
+                'Hora'  => now()->format('H:i:s'),
+            ]
+        ));
 
-        return back()->with('success', '✅ Nota médica registrada correctamente.');
+        return redirect()->route('notas.index')->with('success', '✅ Nota médica registrada correctamente.');
     }
 
-    /**
-     * Mostrar una nota médica específica.
-     */
     public function show($id)
     {
-        $nota = NotaMedica::with('expediente.paciente')->findOrFail($id);
-        return view('notas.show', compact('nota'));
+        $nota = NotaMedica::with('historiaClinica.expediente.paciente')->findOrFail($id);
+        $historia = $nota->historiaClinica; // 🔹 Se envía también la historia clínica a la vista
+
+        return view('notas.show', compact('nota', 'historia'));
     }
 
-    /**
-     * Formulario para editar una nota médica.
-     */
     public function edit($id)
     {
         $nota = NotaMedica::findOrFail($id);
-        $expedientes = Expediente::all();
-        return view('notas.edit', compact('nota', 'expedientes'));
+        $historias = HistoriaClinica::with('expediente.paciente')->get();
+
+        return view('notas.edit', compact('nota', 'historias'));
     }
 
-    /**
-     * Actualizar nota médica.
-     */
     public function update(Request $request, $id)
     {
         $nota = NotaMedica::findOrFail($id);
 
         $request->validate([
-            'Expediente_Id' => 'required|exists:expediente,Id_Expediente',
-            'Fecha' => 'required|date',
-            'Hora' => 'required',
+            'Historia_Id' => 'required|exists:historia_clinica,Id_Historia',
             'Peso' => 'nullable|numeric',
             'Talla' => 'nullable|numeric',
             'Presion_Arterial' => 'nullable|string|max:20',
@@ -115,18 +102,29 @@ class NotaMedicaController extends Controller
             'Observacion' => 'nullable|string',
         ]);
 
-        $nota->update($request->all());
+        $nota->update(array_merge(
+            $request->only([
+                'Historia_Id',
+                'Peso',
+                'Talla',
+                'Presion_Arterial',
+                'Frecuencia_Cardiaca',
+                'Impresion_Diagnostica',
+                'Tratamiento',
+                'Observacion',
+            ]),
+            [
+                'Fecha' => now()->toDateString(),
+                'Hora'  => now()->format('H:i:s'),
+            ]
+        ));
 
         return redirect()->route('notas.index')->with('success', '✅ Nota médica actualizada correctamente.');
     }
 
-    /**
-     * Eliminar una nota médica.
-     */
     public function destroy($id)
     {
-        $nota = NotaMedica::findOrFail($id);
-        $nota->delete();
+        NotaMedica::findOrFail($id)->delete();
 
         return back()->with('success', '🗑️ Nota médica eliminada correctamente.');
     }

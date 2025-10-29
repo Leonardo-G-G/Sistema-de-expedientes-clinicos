@@ -54,14 +54,15 @@
         </form>
     </aside>
 
+    <!-- Contenido principal -->
     <div class="main-content">
         <header>
-            <h1>Historia Clínica - {{ $historia->expediente->paciente->Nombre }} {{ $historia->expediente->paciente->Apellido }}</h1>
+            <h1>Historia Clínica de {{ $historia->expediente->paciente->Nombre ?? '---' }} {{ $historia->expediente->paciente->Apellido ?? '' }}</h1>
         </header>
 
         <!-- Datos Generales -->
         <div class="card mb-3">
-            <div class="card-header">Datos Generales</div>
+            <div class="card-header"><i class="bi bi-person-vcard"></i> Datos Generales</div>
             <div class="card-body">
                 <p><strong>Expediente:</strong> #{{ $historia->Expediente_Id }}</p>
                 <p><strong>Padecimiento Actual:</strong> {{ $historia->Padecimiento_Actual }}</p>
@@ -86,21 +87,24 @@
             @foreach($modelos as $modelo)
                 @if($modelo)
                     <div class="card mb-3">
-                        <div class="card-header">Antecedentes {{ $titulo }}</div>
+                        <div class="card-header"><i class="bi bi-heart-pulse"></i> Antecedentes {{ $titulo }}</div>
                         <div class="card-body">
                             @foreach($modelo->getAttributes() as $key => $value)
-                                @if(!preg_match('/id/i', $key) && !in_array($key, ['created_at', 'updated_at']))
+                                @if(
+                                    !preg_match('/id/i', $key) &&
+                                    !in_array($key, ['created_at', 'updated_at', 'Ciclos_Regulares']) {{-- 🟢 Eliminado completamente --}}
+                                )
                                     @php
-                                        $label = str_replace('_', ' ', $key);
-                                        $camposNumericos = ['Gestaciones', 'Partos', 'Abortos', 'Cesareas'];
+                                        $key = strtolower($key);
+                                        $label = str_replace('_', ' ', ucfirst($key));
+                                        $camposNumericos = ['gestaciones', 'partos', 'abortos', 'cesareas'];
 
-                                        // Solo convertir 1/0 a Sí/No si no es campo numérico
-                                        if (!in_array(ucfirst($key), $camposNumericos)) {
+                                        if (!in_array($key, $camposNumericos)) {
                                             if ($value === 1) $value = 'Sí';
                                             elseif ($value === 0) $value = 'No';
                                         }
                                     @endphp
-                                    <p><strong>{{ ucfirst($label) }}:</strong> {{ $value }}</p>
+                                    <p><strong>{{ $label }}:</strong> {{ $value }}</p>
                                 @endif
                             @endforeach
                         </div>
@@ -109,12 +113,12 @@
             @endforeach
         @endforeach
 
-        <!-- Nota Médica -->
-        @if($historia->expediente->notaMedicas && $historia->expediente->notaMedicas->count() > 0)
+        <!-- Notas Médicas -->
+        @if($historia->notaMedicas && $historia->notaMedicas->count() > 0)
             <div class="card mb-3">
-                <div class="card-header">Notas Médicas</div>
+                <div class="card-header"><i class="bi bi-journal-medical"></i> Notas Médicas</div>
                 <div class="card-body">
-                    @foreach($historia->expediente->notaMedicas->sortByDesc('Fecha') as $nota)
+                    @foreach($historia->notaMedicas->sortByDesc('Fecha') as $nota)
                         <div class="mb-3 border-bottom pb-2">
                             <p><strong>Fecha:</strong> {{ $nota->Fecha ?? 'Sin especificar' }} |
                                <strong>Hora:</strong> {{ $nota->Hora ?? '---' }}</p>

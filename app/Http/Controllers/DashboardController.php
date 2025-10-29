@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Paciente;
-use App\Models\HistoriaClinica;
+use App\Models\Expediente;
 
 class DashboardController extends Controller
 {
@@ -12,7 +12,7 @@ class DashboardController extends Controller
     {
         // Contadores (ejemplo)
         $totalPacientes = Paciente::count();
-        $totalExpedientes = HistoriaClinica::count();
+        $totalExpedientes = Expediente::count();
 
         // Usuario autenticado
         $usuario = Auth::user();

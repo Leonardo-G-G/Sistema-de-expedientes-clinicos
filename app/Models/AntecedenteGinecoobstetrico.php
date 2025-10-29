@@ -14,7 +14,6 @@ class AntecedenteGinecoobstetrico extends Model
         'Historia_Id',
         'Menarca_Edad',
         'Tipo_Ciclo',
-        'Ciclos_Regulares',
         'Ciclos_Dolor',
         'Ultima_Regla',
         'Inicio_Vida_Sexual',

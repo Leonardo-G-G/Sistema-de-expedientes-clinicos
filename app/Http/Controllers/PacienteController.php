@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Paciente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PacienteController extends Controller
 {
@@ -12,16 +13,19 @@ class PacienteController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = trim($request->input('search'));
 
         $pacientes = Paciente::when($search, function ($query, $search) {
-            $query->where('Nombre', 'like', "%{$search}%")
-                  ->orWhere('Apellido', 'like', "%{$search}%")
-                  ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
-                  ->orWhere('Telefono', 'like', "%{$search}%")
-                  ->orWhere('Lugar_Origen', 'like', "%{$search}%");
+            $query->where(function ($subquery) use ($search) {
+                $subquery->where('Nombre', 'like', "%{$search}%")
+                         ->orWhere('Apellido', 'like', "%{$search}%")
+                         ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
+                         ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"])
+                         ->orWhere('Telefono', 'like', "%{$search}%")
+                         ->orWhere('Lugar_Origen', 'like', "%{$search}%");
+            });
         })
-        ->orderBy('Id_Paciente', 'DESC')
+        ->orderByDesc('Id_Paciente')
         ->paginate(10);
 
         return view('pacientes.index', compact('pacientes'));
@@ -48,7 +52,13 @@ class PacienteController extends Controller
             'Lugar_Origen' => 'nullable|string|max:150',
         ]);
 
-        Paciente::create($request->all());
+        Paciente::create($request->only([
+            'Nombre',
+            'Apellido',
+            'Sexo',
+            'Telefono',
+            'Lugar_Origen'
+        ]));
 
         return redirect()->route('pacientes.index')
                          ->with('success', '✅ Paciente registrado exitosamente.');
@@ -78,7 +88,13 @@ class PacienteController extends Controller
             'Lugar_Origen' => 'nullable|string|max:150',
         ]);
 
-        $paciente->update($request->all());
+        $paciente->update($request->only([
+            'Nombre',
+            'Apellido',
+            'Sexo',
+            'Telefono',
+            'Lugar_Origen'
+        ]));
 
         return redirect()->route('pacientes.index')
                          ->with('success', '✅ Datos del paciente actualizados correctamente.');
@@ -97,15 +113,32 @@ class PacienteController extends Controller
     }
 
     /**
-     * 🔍 Buscar pacientes por nombre/apellido (para expediente)
+     * 🔍 Buscar pacientes por nombre, apellido o expediente (para selects dinámicos o AJAX)
      */
     public function buscar(Request $request)
     {
-        $query = $request->get('q', ''); // "q" o "query", según cómo lo envíes desde AJAX
+        $query = trim($request->get('q', ''));
 
-        $pacientes = Paciente::where('Nombre', 'like', "%{$query}%")
-            ->orWhere('Apellido', 'like', "%{$query}%")
-            ->select('Id_Paciente', 'Nombre', 'Apellido')
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $pacientes = DB::table('paciente')
+            ->join('expediente', 'paciente.Id_Paciente', '=', 'expediente.Paciente_Id')
+            ->select(
+                'paciente.Id_Paciente',
+                'paciente.Nombre',
+                'paciente.Apellido',
+                'expediente.Id_Expediente'
+            )
+            ->where(function ($q) use ($query) {
+                $q->where('paciente.Nombre', 'like', "%{$query}%")
+                  ->orWhere('paciente.Apellido', 'like', "%{$query}%")
+                  ->orWhereRaw("CONCAT(paciente.Nombre, ' ', paciente.Apellido) LIKE ?", ["%{$query}%"])
+                  ->orWhereRaw("CONCAT(paciente.Apellido, ' ', paciente.Nombre) LIKE ?", ["%{$query}%"])
+                  ->orWhere('expediente.Id_Expediente', 'like', "%{$query}%");
+            })
+            ->distinct()
             ->limit(10)
             ->get();
 

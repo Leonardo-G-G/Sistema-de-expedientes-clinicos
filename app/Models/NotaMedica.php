@@ -11,20 +11,14 @@ class NotaMedica extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'Expediente_Id',
-        'Fecha',
-        'Hora',
-        'Impresion_Diagnostica',
-        'Tratamiento',
-        'Observacion',
-        'Peso',
-        'Talla',
-        'Presion_Arterial',
-        'Frecuencia_Cardiaca',
+        'Historia_Id', 'Fecha', 'Hora', 'Peso', 'Talla',
+        'Presion_Arterial', 'Frecuencia_Cardiaca',
+        'Impresion_Diagnostica', 'Tratamiento', 'Observacion'
     ];
 
-    public function expediente()
+    // Relación con Historia Clínica
+    public function historiaClinica()
     {
-        return $this->belongsTo(Expediente::class, 'Expediente_Id', 'Id_Expediente');
+        return $this->belongsTo(HistoriaClinica::class, 'Historia_Id', 'Id_Historia');
     }
 }

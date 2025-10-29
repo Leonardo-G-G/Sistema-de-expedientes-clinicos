@@ -26,141 +26,117 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <h2>Sistema Clínico</h2>
-        <div class="user-info">
-            <i class="bi bi-person-circle"></i>
-            <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
+<aside class="sidebar">
+    <h2>Sistema Clínico</h2>
+    <div class="user-info">
+        <i class="bi bi-person-circle"></i>
+        <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
+    </div>
+
+    <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
+        <i class="bi bi-file-earmark-medical"></i> Historias Clínicas
+    </a>
+    <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.*') ? 'active' : '' }}">
+        <i class="bi bi-journal-medical"></i> Notas Médicas
+    </a>
+    <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
+        <i class="bi bi-person-circle"></i> Perfil
+    </a>
+
+    <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
+        @csrf
+        <button type="submit" class="logout-btn">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+        </button>
+    </form>
+</aside>
+
+<div class="main-content">
+    <header>
+        <h1>Editar Nota Médica</h1>
+    </header>
+
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
+    @endif
 
-        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
-        </a>
+    <form action="{{ route('notas.update', $nota->Id_Nota) }}" method="POST">
+        @csrf
+        @method('PUT')
 
-        <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}">
-            <i class="bi bi-folder-plus"></i> <span>Expedientes</span>
-        </a>
+        <!-- Campo obligatorio Historia_Id -->
+        <input type="hidden" name="Historia_Id" value="{{ $nota->Historia_Id }}">
 
-        <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
-            <i class="bi bi-file-earmark-medical"></i> <span>Historias Clínicas</span>
-        </a>
+        <!-- Fecha y hora automáticas -->
+        <input type="hidden" name="Fecha" value="{{ now()->toDateString() }}">
+        <input type="hidden" name="Hora" value="{{ now()->format('H:i:s') }}">
 
-        <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
-            <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
-        </a>
-
-        <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.*') ? 'active' : '' }}">
-            <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
-        </a>
-
-        <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
-            <i class="bi bi-person-circle"></i> <span>Perfil</span>
-        </a>
-
-        <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
-            @csrf
-            <button type="submit" class="logout-btn">
-                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-            </button>
-        </form>
-    </aside>
-
-    <!-- Main content -->
-    <div class="main-content">
-        <header>
-            <h1>Editar Nota Médica</h1>
-        </header>
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form action="{{ route('notas.update', $nota->Id_Nota) }}" method="POST">
-            @csrf
-            @method('PUT')
-
+        <!-- Mostrar paciente -->
+        @if($nota->historiaClinica)
             <div class="mb-3">
-                <label>Paciente / Expediente</label>
-                <select name="Expediente_Id" class="form-select" required>
-                    @foreach($expedientes as $expediente)
-                        <option value="{{ $expediente->Id_Expediente }}"
-                            {{ $nota->Expediente_Id == $expediente->Id_Expediente ? 'selected' : '' }}>
-                            {{ $expediente->paciente->Nombre }} {{ $expediente->paciente->Apellido }}
-                        </option>
-                    @endforeach
-                </select>
+                <label class="form-label"><strong>Paciente:</strong></label>
+                <p>{{ $nota->historiaClinica->expediente->paciente->Nombre ?? '' }} {{ $nota->historiaClinica->expediente->paciente->Apellido ?? '' }}</p>
             </div>
+        @endif
 
-            <!-- Fecha y Hora -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label>Fecha</label>
-                    <input type="date" name="Fecha" class="form-control" value="{{ old('Fecha', $nota->Fecha) }}" required>
+        <!-- Campos de la Nota Médica -->
+        <div class="card mb-3">
+            <div class="card-header">Detalles de la Nota Médica</div>
+            <div class="card-body row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Peso (kg)</label>
+                    <input type="number" step="0.1" min="0" name="Peso" class="form-control" value="{{ old('Peso', $nota->Peso) }}">
                 </div>
-                <div class="col-md-6">
-                    <label>Hora</label>
-                    <input type="time" name="Hora" class="form-control" value="{{ old('Hora', $nota->Hora) }}" required>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Talla (cm)</label>
+                    <input type="number" step="0.1" min="0" name="Talla" class="form-control" value="{{ old('Talla', $nota->Talla) }}">
                 </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label>Peso (kg)</label>
-                    <input type="number" step="0.1" name="Peso" class="form-control" value="{{ old('Peso', $nota->Peso) }}">
-                </div>
-                <div class="col-md-6">
-                    <label>Talla (m)</label>
-                    <input type="number" step="0.01" name="Talla" class="form-control" value="{{ old('Talla', $nota->Talla) }}">
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label>Presión Arterial</label>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Presión Arterial</label>
                     <input type="text" name="Presion_Arterial" class="form-control" value="{{ old('Presion_Arterial', $nota->Presion_Arterial) }}">
                 </div>
-                <div class="col-md-6">
-                    <label>Frecuencia Cardíaca</label>
-                    <input type="number" name="Frecuencia_Cardiaca" class="form-control" value="{{ old('Frecuencia_Cardiaca', $nota->Frecuencia_Cardiaca) }}">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Frecuencia Cardíaca</label>
+                    <input type="number" min="0" name="Frecuencia_Cardiaca" class="form-control" value="{{ old('Frecuencia_Cardiaca', $nota->Frecuencia_Cardiaca) }}">
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Impresión Diagnóstica</label>
+                    <textarea name="Impresion_Diagnostica" rows="3" class="form-control">{{ old('Impresion_Diagnostica', $nota->Impresion_Diagnostica) }}</textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Tratamiento</label>
+                    <textarea name="Tratamiento" rows="3" class="form-control">{{ old('Tratamiento', $nota->Tratamiento) }}</textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Observación</label>
+                    <textarea name="Observacion" rows="3" class="form-control">{{ old('Observacion', $nota->Observacion) }}</textarea>
                 </div>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label>Impresión Diagnóstica</label>
-                <textarea name="Impresion_Diagnostica" rows="3" class="form-control">{{ old('Impresion_Diagnostica', $nota->Impresion_Diagnostica) }}</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label>Tratamiento</label>
-                <textarea name="Tratamiento" rows="3" class="form-control">{{ old('Tratamiento', $nota->Tratamiento) }}</textarea>
-            </div>
-
-            <div class="mb-3">
-                <label>Observación</label>
-                <textarea name="Observacion" rows="3" class="form-control">{{ old('Observacion', $nota->Observacion) }}</textarea>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <a href="{{ route('notas.index') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Volver
-                </a>
-                <button type="submit" class="btn btn-success">
-                    <i class="bi bi-save"></i> Actualizar Nota Médica
-                </button>
-            </div>
-        </form>
-    </div>
+        <div class="d-flex justify-content-between">
+            <a href="{{ route('notas.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save"></i> Actualizar Nota Médica
+            </button>
+        </div>
+    </form>
+</div>
 
 </body>
 </html>

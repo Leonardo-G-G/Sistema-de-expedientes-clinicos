@@ -110,6 +110,7 @@
                         <th>Sexo</th>
                         <th>Edad</th>
                         <th>Teléfono</th>
+                        <th>Contacto de Emergencia</th>
                         <th>Lugar de Origen</th>
                         <th>Acciones</th>
                     </tr>
@@ -123,6 +124,7 @@
                             <td>{{ $paciente->Sexo ?? '—' }}</td>
                             <td>{{ $paciente->edad ?? '—' }}</td>
                             <td>{{ $paciente->Telefono ?? '—' }}</td>
+                            <td>{{ $paciente->Contacto_Emergencia ?? '—' }}</td>
                             <td>{{ $paciente->Lugar_Origen ?? '—' }}</td>
                             <td>
                                 <a href="{{ route('pacientes.edit', $paciente->Id_Paciente) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
@@ -135,7 +137,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No hay pacientes registrados</td>
+                            <td colspan="9" class="text-center">No hay pacientes registrados</td>
                         </tr>
                     @endforelse
                 </tbody>

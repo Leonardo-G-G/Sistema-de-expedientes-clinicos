@@ -22,6 +22,7 @@
 </head>
 <body>
 
+<!-- Sidebar -->
 <aside class="sidebar">
     <h2>Sistema Clínico</h2>
     <div class="user-info">
@@ -29,29 +30,30 @@
         <p>{{ Auth::user()->name ?? 'Admin' }}</p>
     </div>
     <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+        <i class="bi bi-speedometer2"></i> Dashboard
     </a>
     <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}">
-        <i class="bi bi-folder-plus"></i> <span>Expedientes</span>
+        <i class="bi bi-folder2-open"></i> Expedientes
     </a>
-    <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
-        <i class="bi bi-file-earmark-medical"></i> <span>Historia Clínica</span>
+    <a href="{{ route('historia.index') }}" class="active">
+        <i class="bi bi-file-earmark-medical"></i> Historia Clínica
     </a>
     <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
-        <i class="bi bi-person-lines-fill"></i> <span>Pacientes</span>
+        <i class="bi bi-person-lines-fill"></i> Pacientes
     </a>
     <a href="{{ route('notas.index') }}" class="{{ request()->routeIs('notas.*') ? 'active' : '' }}">
-        <i class="bi bi-journal-medical"></i> <span>Nota Médica</span>
+        <i class="bi bi-journal-medical"></i> Notas Médicas
     </a>
     <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
-        <i class="bi bi-person-circle"></i> <span>Perfil</span>
+        <i class="bi bi-person-circle"></i> Perfil
     </a>
     <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
         @csrf
         <button type="submit" class="btn btn-danger mt-3"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
     </form>
-</aside>    
+</aside>
 
+<!-- Contenido principal -->
 <div class="main-content">
     <header>
         <h1>Editar Historia Clínica</h1>
@@ -60,6 +62,7 @@
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
+
     @if($errors->any())
         <div class="alert alert-danger">
             <ul class="mb-0">
@@ -74,29 +77,34 @@
         @csrf
         @method('PUT')
 
-        <!-- Datos generales -->
+        <!-- Datos Generales -->
         <div class="card">
             <div class="card-header">Datos Generales</div>
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">Expediente</label>
-                    <input type="text" class="form-control" 
-                        value="Expediente #{{ $historia->expediente->Id_Expediente }} - {{ $historia->expediente->paciente->Nombre }} {{ $historia->expediente->paciente->Apellido }}" disabled>
+                    <input type="text" class="form-control" disabled
+                        value="Expediente #{{ $historia->expediente->Id_Expediente }} - {{ optional($historia->expediente->paciente)->Nombre }} {{ optional($historia->expediente->paciente)->Apellido }}">
                     <input type="hidden" name="Expediente_Id" value="{{ $historia->Expediente_Id }}">
                 </div>
-                
+
+                <div class="mb-3">
+                    <label class="form-label">Padecimiento Actual</label>
+                    <textarea name="Padecimiento_Actual" class="form-control" rows="3" required>{{ old('Padecimiento_Actual', $historia->Padecimiento_Actual) }}</textarea>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Exploración Física</label>
-                    <textarea name="Exploracion_Fisica" class="form-control" rows="3">{{ old('Exploracion_Fisica', $historia->Exploracion_Fisica) }}</textarea>
+                    <textarea name="Exploracion_Fisica" class="form-control" rows="3" required>{{ old('Exploracion_Fisica', $historia->Exploracion_Fisica) }}</textarea>
                 </div>
             </div>
         </div>
 
-        <!-- Antecedentes heredofamiliares -->
+        <!-- Heredofamiliares -->
         <div class="card">
             <div class="card-header">Antecedentes Heredofamiliares</div>
             <div class="card-body row">
-                @php $h = $historia->heredofamiliares->first() ?? new \App\Models\AntecedenteHeredofamiliar(); @endphp
+                @php $h = $historia->heredofamiliares ?? new \App\Models\AntecedenteHeredofamiliar(); @endphp
                 @foreach(['Diabetes','Hipertension','Cancer'] as $campo)
                     <div class="col-md-4 mb-3">
                         <label class="form-label">{{ $campo }}</label>
@@ -106,12 +114,12 @@
                         </select>
                     </div>
                 @endforeach
-                <div class="col-md-12 mb-3">
+                <div class="col-md-6 mb-3">
                     <label class="form-label">Enfermedades Crónicas</label>
                     <input type="text" name="heredofamiliares[Enfermedades_Cronicas]" class="form-control"
                         value="{{ old('heredofamiliares.Enfermedades_Cronicas', $h->Enfermedades_Cronicas ?? '') }}">
                 </div>
-                <div class="col-md-12 mb-3">
+                <div class="col-md-6 mb-3">
                     <label class="form-label">Otros</label>
                     <input type="text" name="heredofamiliares[Otros]" class="form-control"
                         value="{{ old('heredofamiliares.Otros', $h->Otros ?? '') }}">
@@ -119,11 +127,11 @@
             </div>
         </div>
 
-        <!-- Antecedentes no patológicos -->
+        <!-- No Patológicos -->
         <div class="card">
             <div class="card-header">Antecedentes No Patológicos</div>
             <div class="card-body row">
-                @php $np = $historia->noPatologicos->first() ?? new \App\Models\AntecedenteNoPatologico(); @endphp
+                @php $np = $historia->noPatologicos ?? new \App\Models\AntecedenteNoPatologico(); @endphp
                 @foreach(['Tipo_Vivienda','Religion','Alimentacion','Actividad_Fisica'] as $campo)
                     <div class="col-md-6 mb-3">
                         <label class="form-label">{{ str_replace('_', ' ', $campo) }}</label>
@@ -143,21 +151,21 @@
             </div>
         </div>
 
-        <!-- Antecedentes patológicos -->
+        <!-- Patológicos -->
         <div class="card">
             <div class="card-header">Antecedentes Patológicos</div>
             <div class="card-body">
-                @php $p = $historia->patologicos->first() ?? new \App\Models\AntecedentePatologico(); @endphp
+                @php $p = $historia->patologicos ?? new \App\Models\AntecedentePatologico(); @endphp
                 <label class="form-label">Descripción</label>
                 <textarea name="patologicos[Descripcion]" class="form-control" rows="2">{{ old('patologicos.Descripcion', $p->Descripcion ?? '') }}</textarea>
             </div>
         </div>
 
-        <!-- Antecedentes ginecoobstétricos -->
+        <!-- Ginecoobstétricos -->
         <div class="card">
             <div class="card-header">Antecedentes Ginecoobstétricos</div>
             <div class="card-body row">
-                @php $g = $historia->ginecoobstetricos->first() ?? new \App\Models\AntecedenteGinecoobstetrico(); @endphp
+                @php $g = $historia->ginecoobstetricos ?? new \App\Models\AntecedenteGinecoobstetrico(); @endphp
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Menarca (edad)</label>
                     <input type="number" name="ginecoobstetricos[Menarca_Edad]" class="form-control"
@@ -167,13 +175,6 @@
                     <label class="form-label">Tipo de Ciclo</label>
                     <input type="text" name="ginecoobstetricos[Tipo_Ciclo]" class="form-control"
                         value="{{ old('ginecoobstetricos.Tipo_Ciclo', $g->Tipo_Ciclo ?? '') }}">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Ciclos Regulares</label>
-                    <select name="ginecoobstetricos[Ciclos_Regulares]" class="form-select">
-                        <option value="1" {{ old('ginecoobstetricos.Ciclos_Regulares', $g->Ciclos_Regulares ?? 0) == 1 ? 'selected' : '' }}>Sí</option>
-                        <option value="0" {{ old('ginecoobstetricos.Ciclos_Regulares', $g->Ciclos_Regulares ?? 0) == 0 ? 'selected' : '' }}>No</option>
-                    </select>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Ciclos Dolorosos</label>
@@ -202,11 +203,11 @@
             </div>
         </div>
 
-        <!-- Nota médica -->
+        <!-- Nota Médica -->
         <div class="card">
             <div class="card-header">Nota Médica</div>
             <div class="card-body row">
-                @php $n = $historia->expediente->notaMedicas->first() ?? new \App\Models\NotaMedica(); @endphp
+                @php $n = $historia->notaMedicas->first() ?? new \App\Models\NotaMedica(); @endphp
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Peso (kg)</label>
                     <input type="number" step="0.1" name="nota_medica[Peso]" class="form-control"
@@ -235,21 +236,14 @@
                     <label class="form-label">Tratamiento</label>
                     <textarea name="nota_medica[Tratamiento]" class="form-control">{{ old('nota_medica.Tratamiento', $n->Tratamiento ?? '') }}</textarea>
                 </div>
-
-                <!-- NUEVO CAMPO: OBSERVACIÓN -->
                 <div class="col-md-12 mb-3">
                     <label class="form-label">Observación</label>
                     <textarea name="nota_medica[Observacion]" class="form-control" rows="2">{{ old('nota_medica.Observacion', $n->Observacion ?? '') }}</textarea>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Padecimiento Actual</label>
-                    <textarea name="Padecimiento_Actual" class="form-control" rows="3">{{ old('Padecimiento_Actual', $historia->Padecimiento_Actual) }}</textarea>
-                </div>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-success">Actualizar Historia Clínica</button>
+        <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Actualizar Historia Clínica</button>
     </form>
 </div>
 
