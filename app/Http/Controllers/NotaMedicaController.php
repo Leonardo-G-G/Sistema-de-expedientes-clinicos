@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 class NotaMedicaController extends Controller
 {
+    // 📋 Mostrar lista de notas médicas
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -17,7 +18,7 @@ class NotaMedicaController extends Controller
             ->when($search, function ($query, $search) {
                 $query->whereHas('historiaClinica.expediente.paciente', function ($q) use ($search) {
                     $q->whereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
-                        ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"]);
+                      ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"]);
                 });
             })
             ->when($fecha, function ($query, $fecha) {
@@ -30,6 +31,7 @@ class NotaMedicaController extends Controller
         return view('notas.index', compact('notas', 'search', 'fecha'));
     }
 
+    // 🩺 Crear una nueva nota médica
     public function create($id = null)
     {
         $historia = $id ? HistoriaClinica::with('expediente.paciente')->findOrFail($id) : null;
@@ -38,6 +40,7 @@ class NotaMedicaController extends Controller
         return view('notas.create', compact('historia', 'historias'));
     }
 
+    // 💾 Guardar nueva nota médica
     public function store(Request $request)
     {
         $request->validate([
@@ -46,9 +49,10 @@ class NotaMedicaController extends Controller
             'Talla' => 'nullable|numeric',
             'Presion_Arterial' => 'nullable|string|max:20',
             'Frecuencia_Cardiaca' => 'nullable|integer',
-            'Impresion_Diagnostica' => 'nullable|string',
+            'Exploracion_Fisica' => 'nullable|string',
+            'Diagnostico' => 'nullable|string',
             'Tratamiento' => 'nullable|string',
-            'Observacion' => 'nullable|string',
+            'Plan_A_Seguir' => 'nullable|string',
         ]);
 
         NotaMedica::create(array_merge(
@@ -58,9 +62,10 @@ class NotaMedicaController extends Controller
                 'Talla',
                 'Presion_Arterial',
                 'Frecuencia_Cardiaca',
-                'Impresion_Diagnostica',
+                'Exploracion_Fisica',
+                'Diagnostico',
                 'Tratamiento',
-                'Observacion',
+                'Plan_A_Seguir',
             ]),
             [
                 'Fecha' => now()->toDateString(),
@@ -71,15 +76,16 @@ class NotaMedicaController extends Controller
         return redirect()->route('notas.index')->with('success', '✅ Nota médica registrada correctamente.');
     }
 
+    // 📄 Mostrar una nota médica
     public function show($id)
-{
-    $nota = NotaMedica::with('historiaClinica.expediente.paciente')->findOrFail($id);
-    $historia = $nota->historiaClinica;
+    {
+        $nota = NotaMedica::with('historiaClinica.expediente.paciente')->findOrFail($id);
+        $historia = $nota->historiaClinica;
 
-    return view('notas.show', compact('nota', 'historia'));
-}
+        return view('notas.show', compact('nota', 'historia'));
+    }
 
-
+    // ✏️ Editar nota médica existente
     public function edit($id)
     {
         $nota = NotaMedica::findOrFail($id);
@@ -88,6 +94,7 @@ class NotaMedicaController extends Controller
         return view('notas.edit', compact('nota', 'historias'));
     }
 
+    // 🔄 Actualizar nota médica
     public function update(Request $request, $id)
     {
         $nota = NotaMedica::findOrFail($id);
@@ -98,9 +105,10 @@ class NotaMedicaController extends Controller
             'Talla' => 'nullable|numeric',
             'Presion_Arterial' => 'nullable|string|max:20',
             'Frecuencia_Cardiaca' => 'nullable|integer',
-            'Impresion_Diagnostica' => 'nullable|string',
+            'Exploracion_Fisica' => 'nullable|string',
+            'Diagnostico' => 'nullable|string',
             'Tratamiento' => 'nullable|string',
-            'Observacion' => 'nullable|string',
+            'Plan_A_Seguir' => 'nullable|string',
         ]);
 
         $nota->update(array_merge(
@@ -110,9 +118,10 @@ class NotaMedicaController extends Controller
                 'Talla',
                 'Presion_Arterial',
                 'Frecuencia_Cardiaca',
-                'Impresion_Diagnostica',
+                'Exploracion_Fisica',
+                'Diagnostico',
                 'Tratamiento',
-                'Observacion',
+                'Plan_A_Seguir',
             ]),
             [
                 'Fecha' => now()->toDateString(),
@@ -122,26 +131,28 @@ class NotaMedicaController extends Controller
 
         return redirect()->route('notas.index')->with('success', '✅ Nota médica actualizada correctamente.');
     }
+
+    // 🔍 Búsqueda AJAX de historias clínicas
     public function buscarHistorias(Request $request)
-{
-    $q = $request->get('q');
-    $historias = HistoriaClinica::with('expediente.paciente')
-        ->whereHas('expediente.paciente', function($query) use ($q) {
-            $query->where('Nombre', 'like', "%{$q}%")
-                  ->orWhere('Apellido', 'like', "%{$q}%");
-        })
-        ->get()
-        ->map(function($h) {
-            return [
-                'Id_Historia' => $h->Id_Historia,
-                'Nombre' => $h->expediente->paciente->Nombre,
-                'Apellido' => $h->expediente->paciente->Apellido
-            ];
-        });
-    return response()->json($historias);
-}
+    {
+        $q = $request->get('q');
+        $historias = HistoriaClinica::with('expediente.paciente')
+            ->whereHas('expediente.paciente', function ($query) use ($q) {
+                $query->where('Nombre', 'like', "%{$q}%")
+                      ->orWhere('Apellido', 'like', "%{$q}%");
+            })
+            ->get()
+            ->map(function ($h) {
+                return [
+                    'Id_Historia' => $h->Id_Historia,
+                    'Nombre' => $h->expediente->paciente->Nombre,
+                    'Apellido' => $h->expediente->paciente->Apellido
+                ];
+            });
+        return response()->json($historias);
+    }
 
-
+    // 🗑️ Eliminar nota médica
     public function destroy($id)
     {
         NotaMedica::findOrFail($id)->delete();

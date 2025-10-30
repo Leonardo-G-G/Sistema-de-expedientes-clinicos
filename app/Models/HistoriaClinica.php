@@ -11,9 +11,7 @@ class HistoriaClinica extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'Expediente_Id',
-        'Padecimiento_Actual',
-        'Exploracion_Fisica',
+        'Expediente_Id'
     ];
 
     // 🔹 Relación con expediente (una historia pertenece a un expediente)

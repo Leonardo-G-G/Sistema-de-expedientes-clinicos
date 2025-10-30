@@ -129,6 +129,7 @@
     <form action="{{ route('notas.store') }}" method="POST" class="card p-4 shadow-sm" id="formNota">
         @csrf
 
+        <!-- 🔍 Buscar historia -->
         <div class="mb-3 position-relative">
             <label class="form-label">Buscar Historia Clínica</label>
             <input type="text" id="buscar_historia" class="form-control" placeholder="Nombre o Apellido del paciente">
@@ -139,6 +140,7 @@
         <input type="hidden" name="Fecha" value="{{ now()->format('Y-m-d') }}">
         <input type="hidden" name="Hora" value="{{ now()->format('H:i') }}">
 
+        <!-- 🩺 Datos vitales -->
         <div class="row mb-3">
             <div class="col-md-6">
                 <label class="form-label">Peso (kg)</label>
@@ -161,23 +163,32 @@
             </div>
         </div>
 
+        <!-- 🧍 Exploración física -->
         <div class="mb-3">
-            <label class="form-label">Impresión Diagnóstica</label>
-            <textarea name="Impresion_Diagnostica" rows="3" class="form-control"></textarea>
+            <label class="form-label">Exploración Física</label>
+            <textarea name="Exploracion_Fisica" rows="3" class="form-control"></textarea>
         </div>
 
+        <!-- 🧠 Diagnóstico -->
+        <div class="mb-3">
+            <label class="form-label">Diagnóstico</label>
+            <textarea name="Diagnostico" rows="3" class="form-control"></textarea>
+        </div>
+
+        <!-- 💊 Tratamiento -->
         <div class="mb-3">
             <label class="form-label">Tratamiento</label>
             <textarea name="Tratamiento" rows="3" class="form-control"></textarea>
         </div>
 
+        <!-- 📅 Plan a seguir -->
         <div class="mb-3">
-            <label class="form-label">Observaciones</label>
-            <textarea name="Observacion" rows="3" class="form-control"></textarea>
+            <label class="form-label">Plan a Seguir</label>
+            <textarea name="Plan_A_Seguir" rows="3" class="form-control"></textarea>
         </div>
 
         <div class="d-flex justify-content-between">
-            <a href="{{ route('historia.index') }}" class="btn btn-secondary">
+            <a href="{{ route('notas.index') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Volver
             </a>
             <button type="submit" class="btn btn-success">
@@ -187,6 +198,7 @@
     </form>
 </div>
 
+<!-- JS -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('buscar_historia');
@@ -201,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`/buscar-historias?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             lista.innerHTML = '';
-            if(data.length > 0) {
+            if (data.length > 0) {
                 data.forEach(h => {
                     const item = document.createElement('a');
                     item.href = '#';

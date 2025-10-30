@@ -252,8 +252,6 @@
                         <tr>
                             <th>ID</th>
                             <th>Paciente</th>
-                            <th>Padecimiento Actual</th>
-                            <th>Exploración Física</th>
                             <th>Estado Expediente</th>
                             <th>Acciones</th>
                         </tr>
@@ -263,8 +261,6 @@
                             <tr>
                                 <td>{{ $historia->Id_Historia }}</td>
                                 <td>{{ $historia->expediente->paciente->Nombre }} {{ $historia->expediente->paciente->Apellido }}</td>
-                                <td>{{ Str::limit($historia->Padecimiento_Actual, 50) }}</td>
-                                <td>{{ Str::limit($historia->Exploracion_Fisica, 50) }}</td>
                                 <td>{{ $historia->expediente->Estado_Expediente }}</td>
                                 <td>
                                     <a href="{{ route('historia.show', $historia->Id_Historia) }}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
@@ -278,7 +274,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">No se encontraron registros</td>
+                                <td colspan="4" class="text-center">No se encontraron registros</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -290,6 +286,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>

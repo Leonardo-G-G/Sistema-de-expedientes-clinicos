@@ -87,10 +87,7 @@ Swal.fire({ icon: 'error', title: 'Error', html: `{!! implode('<br>', $errors->a
         <div id="resultados" class="list-group mt-1 position-absolute w-100" style="z-index:1050; display:none;"></div>
     </div>
 
-    <div class="mb-3">
-        <label for="Exploracion_Fisica" class="form-label">Exploración Física</label>
-        <textarea id="Exploracion_Fisica" name="Exploracion_Fisica" class="form-control" rows="3" required>{{ old('Exploracion_Fisica') }}</textarea>
-    </div>
+    
 </div>
 </div>
 
@@ -187,42 +184,46 @@ Swal.fire({ icon: 'error', title: 'Error', html: `{!! implode('<br>', $errors->a
 
 <!-- Nota Médica -->
 <div class="card">
-<div class="card-header">Nota Médica</div>
-<div class="card-body row">
-<div class="col-md-3 mb-3">
-<label class="form-label">Peso (kg)</label>
-<input type="number" step="0.1" name="nota_medica[Peso]" class="form-control">
+    <div class="card-header">Nota Médica</div>
+    <div class="card-body row">
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Peso (kg)</label>
+            <input type="number" step="0.1" name="nota_medica[Peso]" class="form-control">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Talla (cm)</label>
+            <input type="number" step="0.1" name="nota_medica[Talla]" class="form-control">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Presión Arterial</label>
+            <input type="text" name="nota_medica[Presion_Arterial]" class="form-control">
+        </div>
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Frecuencia Cardíaca</label>
+            <input type="number" name="nota_medica[Frecuencia_Cardiaca]" class="form-control">
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label for="Exploracion_Fisica" class="form-label">Exploración Física</label>
+            <textarea id="Exploracion_Fisica" name="nota_medica[Exploracion_Fisica]" class="form-control" rows="3">{{ old('nota_medica.Exploracion_Fisica') }}</textarea>
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label class="form-label">Diagnóstico</label>
+            <textarea name="nota_medica[Diagnostico]" class="form-control" rows="3">{{ old('nota_medica.Diagnostico') }}</textarea>
+        </div>
+        
+        <div class="col-md-12 mb-3">
+            <label class="form-label">Tratamiento</label>
+            <textarea name="nota_medica[Tratamiento]" class="form-control" rows="3">{{ old('nota_medica.Tratamiento') }}</textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Plan a Seguir</label>
+            <textarea name="nota_medica[Plan_A_Seguir]" class="form-control" rows="3">{{ old('nota_medica.Plan_A_Seguir') }}</textarea>
+        </div>
+    </div>
 </div>
-<div class="col-md-3 mb-3">
-<label class="form-label">Talla (cm)</label>
-<input type="number" step="0.1" name="nota_medica[Talla]" class="form-control">
-</div>
-<div class="col-md-3 mb-3">
-<label class="form-label">Presión Arterial</label>
-<input type="text" name="nota_medica[Presion_Arterial]" class="form-control">
-</div>
-<div class="col-md-3 mb-3">
-<label class="form-label">Frecuencia Cardíaca</label>
-<input type="number" name="nota_medica[Frecuencia_Cardiaca]" class="form-control">
-</div>
-<div class="col-md-6 mb-3">
-<label class="form-label">Impresión Diagnóstica</label>
-<textarea name="nota_medica[Impresion_Diagnostica]" class="form-control" rows="2"></textarea>
-</div>
-<div class="col-md-6 mb-3">
-<label class="form-label">Tratamiento</label>
-<textarea name="nota_medica[Tratamiento]" class="form-control" rows="2"></textarea>
-</div>
-<div class="col-md-12 mb-3">
-<label class="form-label">Observación</label>
-<textarea name="nota_medica[Observacion]" class="form-control" rows="2"></textarea>
-</div>
-<div class="mb-3">
-<label for="Padecimiento_Actual" class="form-label">Padecimiento Actual</label>
-<textarea id="Padecimiento_Actual" name="Padecimiento_Actual" class="form-control" rows="3" required>{{ old('Padecimiento_Actual') }}</textarea>
-</div>
-</div>
-</div>
+
 
 <!-- Botones Guardar y Volver -->
 <div class="d-flex justify-content-between mt-3">
@@ -262,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ev.preventDefault();
                         input.value = nombre;
                         lista.style.display = 'none';
-                        hidden.value = e.Id_Expediente; // Asignar valor primero
+                        hidden.value = e.Id_Expediente;
                         const check = await fetch(`/verificar-historia/${e.Id_Expediente}`);
                         const {existe} = await check.json();
                         if(existe){

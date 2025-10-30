@@ -16,8 +16,7 @@ return new class extends Migration {
                   ->constrained('expediente', 'Id_Expediente')
                   ->onDelete('cascade');
 
-            $table->text('Padecimiento_Actual')->nullable();
-            $table->text('Exploracion_Fisica')->nullable();
+            // Se eliminaron los campos Padecimiento_Actual y Exploracion_Fisica
         });
     }
 
