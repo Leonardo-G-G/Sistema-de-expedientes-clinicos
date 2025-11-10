@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->date('Fecha')->useCurrent();
             $table->time('Hora')->nullable();
             $table->float('Peso')->nullable();
-            $table->float('Talla')->nullable();
+            $table->decimal('Talla', 4, 2)->nullable(); 
             $table->string('Presion_Arterial', 20)->nullable();
             $table->integer('Frecuencia_Cardiaca')->nullable();
             $table->text('Exploracion_Fisica')->nullable();

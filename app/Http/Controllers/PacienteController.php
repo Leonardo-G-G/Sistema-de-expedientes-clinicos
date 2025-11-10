@@ -5,31 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class PacienteController extends Controller
 {
     /**
      * 📋 Listado de pacientes con buscador avanzado
      */
-    public function index(Request $request)
-    {
-        $search = trim($request->input('search'));
+   public function index(Request $request)
+{
+    $search = trim($request->input('search'));
+    $medicoId = Auth::user()->Id_Usuario;
 
-        $pacientes = Paciente::when($search, function ($query, $search) {
+    $pacientes = Paciente::where(function ($query) use ($medicoId) {
+            $query->whereDoesntHave('expediente') // Pacientes sin expediente
+                  ->orWhereHas('expediente', function ($q) use ($medicoId) {
+                      $q->where('Medico_Id', $medicoId);
+                  });
+        })
+        ->when($search, function ($query, $search) {
             $query->where(function ($subquery) use ($search) {
                 $subquery->where('Nombre', 'like', "%{$search}%")
                          ->orWhere('Apellido', 'like', "%{$search}%")
-                         ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
-                         ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"])
-                         ->orWhere('Telefono', 'like', "%{$search}%")
-                         ->orWhere('Lugar_Origen', 'like', "%{$search}%");
+                         ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"]);
             });
         })
         ->orderByDesc('Id_Paciente')
         ->paginate(10);
 
-        return view('pacientes.index', compact('pacientes'));
-    }
+    return view('pacientes.index', compact('pacientes', 'search'));
+}
 
     /**
      * ➕ Mostrar formulario de creación
@@ -50,6 +56,8 @@ class PacienteController extends Controller
             'Sexo' => 'nullable|string|max:10',
             'Telefono' => 'nullable|string|max:15',
             'Lugar_Origen' => 'nullable|string|max:150',
+            'Contacto_Emergencia' => 'nullable|string|max:150',
+            'Fecha_Nacimiento' => 'nullable|date|before_or_equal:today'
         ]);
 
         Paciente::create($request->only([
@@ -57,7 +65,9 @@ class PacienteController extends Controller
             'Apellido',
             'Sexo',
             'Telefono',
-            'Lugar_Origen'
+            'Lugar_Origen',
+            'Contacto_Emergencia',
+            'Fecha_Nacimiento'
         ]));
 
         return redirect()->route('pacientes.index')
@@ -86,6 +96,8 @@ class PacienteController extends Controller
             'Sexo' => 'nullable|string|max:10',
             'Telefono' => 'nullable|string|max:15',
             'Lugar_Origen' => 'nullable|string|max:150',
+            'Contacto_Emergencia' => 'nullable|string|max:150',
+            'Fecha_Nacimiento' => 'nullable|date|before_or_equal:today'
         ]);
 
         $paciente->update($request->only([
@@ -93,7 +105,9 @@ class PacienteController extends Controller
             'Apellido',
             'Sexo',
             'Telefono',
-            'Lugar_Origen'
+            'Lugar_Origen',
+            'Contacto_Emergencia',
+            'Fecha_Nacimiento'
         ]));
 
         return redirect()->route('pacientes.index')
@@ -111,6 +125,7 @@ class PacienteController extends Controller
         return redirect()->route('pacientes.index')
                          ->with('success', '🗑️ Paciente eliminado correctamente.');
     }
+
     /**
      * 👁️ Mostrar información detallada de un paciente
      */
@@ -119,7 +134,6 @@ class PacienteController extends Controller
         $paciente = Paciente::with('expediente')->findOrFail($Id_Paciente);
         return view('pacientes.show', compact('paciente'));
     }
-
 
     /**
      * 🔍 Buscar pacientes por nombre, apellido o expediente (para selects dinámicos o AJAX)

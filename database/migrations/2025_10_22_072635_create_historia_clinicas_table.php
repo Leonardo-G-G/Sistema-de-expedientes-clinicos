@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('historia_clinica', function (Blueprint $table) {
             $table->id('Id_Historia');
 
-            // 🔗 Un expediente solo puede tener una historia clínica
+            // Un expediente solo puede tener una historia clínica
             $table->foreignId('Expediente_Id')
                   ->unique()
                   ->constrained('expediente', 'Id_Expediente')

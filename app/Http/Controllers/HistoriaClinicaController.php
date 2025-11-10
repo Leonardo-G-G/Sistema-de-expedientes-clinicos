@@ -4,16 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\HistoriaClinica;
 use App\Models\Expediente;
 
 class HistoriaClinicaController extends Controller
 {
+    // 📋 Listado de historias clínicas (solo del médico autenticado)
     public function index(Request $request)
     {
         $search = trim($request->input('search'));
+        $medicoId = Auth::user()->Id_Usuario;
 
         $historias = HistoriaClinica::with('expediente.paciente')
+            ->whereHas('expediente', fn($q) => $q->where('Medico_Id', $medicoId)) // 🔒 Restricción por médico
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('expediente.paciente', function ($q) use ($search) {
                     $q->where('Nombre', 'like', "%{$search}%")
@@ -32,15 +36,18 @@ class HistoriaClinicaController extends Controller
         return view('historia.index', compact('historias', 'search'));
     }
 
+    // 🩺 Crear nueva historia (solo expedientes del médico logueado)
     public function create()
     {
         $expedientes = Expediente::with('paciente')
+            ->where('Medico_Id', Auth::user()->Id_Usuario)
             ->orderByDesc('Id_Expediente')
             ->get();
 
         return view('historia.create', compact('expedientes'));
     }
 
+    // 💾 Guardar historia clínica
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -48,11 +55,16 @@ class HistoriaClinicaController extends Controller
             'nota_medica.Exploracion_Fisica' => 'required|string',
         ]);
 
-        // ⚠️ Verifica que no exista ya historia para este expediente
+        $expediente = Expediente::where('Id_Expediente', $request->Expediente_Id)
+            ->where('Medico_Id', Auth::user()->Id_Usuario)
+            ->first();
+
+        if (!$expediente) {
+            return back()->withErrors(['No tienes permiso para crear una historia clínica para este expediente.']);
+        }
+
         if (HistoriaClinica::where('Expediente_Id', $request->Expediente_Id)->exists()) {
-            return redirect()->back()
-                ->withErrors(['Ya existe una historia clínica para este expediente.'])
-                ->withInput();
+            return back()->withErrors(['Ya existe una historia clínica para este expediente.'])->withInput();
         }
 
         DB::transaction(function () use ($request) {
@@ -103,8 +115,11 @@ class HistoriaClinicaController extends Controller
             ->with('success', '✅ Historia clínica registrada correctamente.');
     }
 
+    // ✏️ Editar historia clínica
     public function edit($id)
     {
+        $medicoId = Auth::user()->Id_Usuario;
+
         $historia = HistoriaClinica::with([
             'expediente.paciente',
             'ginecoobstetricos',
@@ -112,16 +127,26 @@ class HistoriaClinicaController extends Controller
             'noPatologicos',
             'patologicos',
             'notaMedicas'
-        ])->findOrFail($id);
+        ])
+        ->whereHas('expediente', fn($q) => $q->where('Medico_Id', $medicoId))
+        ->findOrFail($id);
 
-        $expedientes = Expediente::with('paciente')->orderByDesc('Id_Expediente')->get();
+        $expedientes = Expediente::with('paciente')
+            ->where('Medico_Id', $medicoId)
+            ->orderByDesc('Id_Expediente')
+            ->get();
 
         return view('historia.edit', compact('historia', 'expedientes'));
     }
 
+    // 🔄 Actualizar historia clínica
     public function update(Request $request, $id)
     {
-        $historia = HistoriaClinica::findOrFail($id);
+        $medicoId = Auth::user()->Id_Usuario;
+
+        $historia = HistoriaClinica::whereHas('expediente', fn($q) =>
+            $q->where('Medico_Id', $medicoId)
+        )->findOrFail($id);
 
         $validated = $request->validate([
             'nota_medica.Exploracion_Fisica' => 'required|string',
@@ -130,7 +155,7 @@ class HistoriaClinicaController extends Controller
         DB::transaction(function () use ($historia, $request) {
             $normalize = fn($v) => in_array(strtolower($v), ['sí', 'si', '1', 'true'], true) ? 1 : 0;
 
-            // Actualizar antecedentes
+            // Heredofamiliares, No Patológicos, Ginecoobstétricos
             foreach ([
                 'heredofamiliares' => ['Diabetes', 'Hipertension', 'Cancer'],
                 'no_patologicos' => ['Tabaquismo', 'Alcoholismo', 'Drogas'],
@@ -174,9 +199,12 @@ class HistoriaClinicaController extends Controller
             ->with('success', '✅ Historia clínica actualizada correctamente.');
     }
 
+    // 🗑️ Eliminar historia clínica
     public function destroy($id)
     {
-        $historia = HistoriaClinica::findOrFail($id);
+        $historia = HistoriaClinica::whereHas('expediente', fn($q) =>
+            $q->where('Medico_Id', Auth::user()->Id_Usuario)
+        )->findOrFail($id);
 
         DB::transaction(function () use ($historia) {
             $historia->ginecoobstetricos()->delete();
@@ -191,6 +219,7 @@ class HistoriaClinicaController extends Controller
             ->with('success', '🗑️ Historia clínica eliminada correctamente.');
     }
 
+    // 👁️ Mostrar historia clínica
     public function show($id)
     {
         $historia = HistoriaClinica::with([
@@ -200,7 +229,11 @@ class HistoriaClinicaController extends Controller
             'noPatologicos',
             'patologicos',
             'notaMedicas'
-        ])->findOrFail($id);
+        ])
+        ->whereHas('expediente', fn($q) =>
+            $q->where('Medico_Id', Auth::user()->Id_Usuario)
+        )
+        ->findOrFail($id);
 
         $relaciones = [
             'heredofamiliares' => 'Heredofamiliares',

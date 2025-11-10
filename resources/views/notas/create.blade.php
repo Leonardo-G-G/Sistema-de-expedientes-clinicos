@@ -1,146 +1,30 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Nota Médica - Sistema Clínico</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        :root {
-            --primary: #0d6efd;
-            --bg: #f5f7fa;
-            --sidebar-width: 250px;
-        }
-        body {
-            background-color: var(--bg);
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            margin: 0;
-            min-height: 100vh;
-        }
-        .sidebar {
-            width: var(--sidebar-width);
-            background: linear-gradient(180deg, #0d6efd, #003c99);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100%;
-            box-shadow: 3px 0 15px rgba(0,0,0,0.15);
-            z-index: 100;
-        }
-        .sidebar h2 {
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: 600;
-            padding: 1.2rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        .user-info {
-            text-align: center;
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        .user-info i {
-            font-size: 3rem;
-            color: #fff;
-        }
-        .user-info p {
-            margin: 0.5rem 0 0;
-            font-weight: 500;
-        }
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0.9rem 1.5rem;
-            transition: background 0.3s;
-            font-weight: 500;
-        }
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: rgba(255,255,255,0.15);
-        }
-        .logout-btn {
-            margin: 1.2rem;
-            background-color: #dc3545;
-            border: none;
-            color: white;
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 2rem;
-            flex: 1;
-        }
-        #resultadosHistorias {
-            max-height: 250px;
-            overflow-y: auto;
-        }
-    </style>
-</head>
-<body>
+@extends('layouts.app')
 
-<aside class="sidebar">
-    <h2>Sistema Clínico</h2>
-    <div class="user-info">
-        <i class="bi bi-person-circle"></i>
-        <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
-    </div>
+@section('titulo', 'Registrar Nota Médica')
+@section('icono')
+    <i class="bi bi-journal-medical text-primary"></i>
+@endsection
+@section('notas_active', 'active')
 
-    <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-        <i class="bi bi-speedometer2"></i> Dashboard
-    </a>
-    <a href="{{ route('expedientes.index') }}" class="{{ request()->routeIs('expedientes.*') ? 'active' : '' }}">
-        <i class="bi bi-folder-plus"></i> Expedientes
-    </a>
-    <a href="{{ route('historia.index') }}" class="{{ request()->routeIs('historia.*') ? 'active' : '' }}">
-        <i class="bi bi-file-earmark-medical"></i> Historias Clínicas
-    </a>
-    <a href="{{ route('pacientes.index') }}" class="{{ request()->routeIs('pacientes.*') ? 'active' : '' }}">
-        <i class="bi bi-person-lines-fill"></i> Pacientes
-    </a>
-    <a href="{{ route('notas.index') }}" class="active">
-        <i class="bi bi-journal-medical"></i> Nota Médica
-    </a>
-    <a href="{{ route('usuario.perfil') }}" class="{{ request()->routeIs('usuario.*') ? 'active' : '' }}">
-        <i class="bi bi-person-circle"></i> Perfil
-    </a>
-
-    <form action="{{ route('logout') }}" method="POST" class="mt-auto text-center">
-        @csrf
-        <button type="submit" class="logout-btn">
-            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-        </button>
-    </form>
-</aside>
-
-<div class="main-content">
-    <header>
-        <h1>Registrar Nota Médica</h1>
-    </header>
+@section('contenido')
+    <h4 class="mb-4"><i class="bi bi-journal-medical"></i> Registrar Nota Médica</h4>
 
     <form action="{{ route('notas.store') }}" method="POST" class="card p-4 shadow-sm" id="formNota">
         @csrf
 
-        <!-- 🔍 Buscar historia -->
+        
         <div class="mb-3 position-relative">
             <label class="form-label">Buscar Historia Clínica</label>
             <input type="text" id="buscar_historia" class="form-control" placeholder="Nombre o Apellido del paciente">
             <input type="hidden" name="Historia_Id" id="Historia_Id" required>
-            <div id="resultadosHistorias" class="list-group position-absolute w-100 mt-1" style="z-index:1050; display:none;"></div>
+            <div id="resultadosHistorias" class="list-group position-absolute w-100 mt-1"
+                style="z-index:1050; display:none;"></div>
         </div>
 
         <input type="hidden" name="Fecha" value="{{ now()->format('Y-m-d') }}">
         <input type="hidden" name="Hora" value="{{ now()->format('H:i') }}">
 
-        <!-- 🩺 Datos vitales -->
+       
         <div class="row mb-3">
             <div class="col-md-6">
                 <label class="form-label">Peso (kg)</label>
@@ -163,25 +47,25 @@
             </div>
         </div>
 
-        <!-- 🧍 Exploración física -->
+       
         <div class="mb-3">
             <label class="form-label">Exploración Física</label>
             <textarea name="Exploracion_Fisica" rows="3" class="form-control"></textarea>
         </div>
 
-        <!-- 🧠 Diagnóstico -->
+      
         <div class="mb-3">
             <label class="form-label">Diagnóstico</label>
             <textarea name="Diagnostico" rows="3" class="form-control"></textarea>
         </div>
 
-        <!-- 💊 Tratamiento -->
+        
         <div class="mb-3">
             <label class="form-label">Tratamiento</label>
             <textarea name="Tratamiento" rows="3" class="form-control"></textarea>
         </div>
 
-        <!-- 📅 Plan a seguir -->
+        
         <div class="mb-3">
             <label class="form-label">Plan a Seguir</label>
             <textarea name="Plan_A_Seguir" rows="3" class="form-control"></textarea>
@@ -196,9 +80,9 @@
             </button>
         </div>
     </form>
-</div>
+@endsection
 
-<!-- JS -->
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('buscar_historia');
@@ -255,7 +139,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endpush

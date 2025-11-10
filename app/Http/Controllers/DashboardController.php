@@ -6,17 +6,19 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Paciente;
 use App\Models\Expediente;
 
+
 class DashboardController extends Controller
 {
     public function index()
-    {
-        // Contadores (ejemplo)
-        $totalPacientes = Paciente::count();
-        $totalExpedientes = Expediente::count();
+{
+    $usuario = Auth::user();
 
-        // Usuario autenticado
-        $usuario = Auth::user();
+    $totalExpedientes = Expediente::where('Medico_Id', $usuario->Id_Usuario)->count();
 
-        return view('dashboard', compact('totalPacientes', 'totalExpedientes', 'usuario'));
-    }
+    $totalPacientes = Paciente::whereHas('expediente', function ($q) use ($usuario) {
+        $q->where('Medico_Id', $usuario->Id_Usuario);
+    })->count();
+
+    return view('dashboard', compact('totalPacientes', 'totalExpedientes', 'usuario'));
+}
 }
