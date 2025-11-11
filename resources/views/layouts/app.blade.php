@@ -21,9 +21,9 @@
         body {
             background: var(--bg);
             font-family: "Poppins", sans-serif;
-            display: flex;
             margin: 0;
             min-height: 100vh;
+            display: flex;
         }
 
         /* SIDEBAR */
@@ -36,6 +36,11 @@
             position: fixed;
             height: 100%;
             box-shadow: 3px 0 10px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
         }
 
         .sidebar h2 {
@@ -95,34 +100,17 @@
             background-color: #b52d3a;
         }
 
-        /* Botón "Nuevo Paciente" */
-.btn-new {
-    background-color: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(0, 119, 182, 0.3);
-}
-
-.btn-new:hover {
-    background-color: var(--primary-dark);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(0, 62, 138, 0.4);
-}
-
-
         /* MAIN CONTENT */
         .main-content {
             margin-left: 260px;
             padding: 2rem;
             flex: 1;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.full-width {
+            margin-left: 0;
         }
 
         header {
@@ -132,15 +120,26 @@
             border-radius: 16px;
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         header h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 600;
             margin: 0;
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.8rem;
         }
 
         .card {
@@ -158,13 +157,19 @@
             font-size: 0.9rem;
         }
 
-        @media (max-width: 768px) {
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
             .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-                flex-direction: row;
-                overflow-x: auto;
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                display: inline-block;
             }
 
             .main-content {
@@ -172,21 +177,16 @@
                 padding: 1rem;
             }
 
-            header {
-                border-radius: 10px;
-                text-align: center;
-            }
-
-            .sidebar h2,
-            .user-info {
-                display: none;
+            header h1 {
+                font-size: 1.3rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <aside class="sidebar">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
         <h2>Sistema Clínico</h2>
         <div class="user-info">
             <i class="bi bi-person-circle"></i>
@@ -225,15 +225,16 @@
         </form>
     </aside>
 
-    <div class="main-content">
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content" id="main">
         <header>
-             <h1>
-        @hasSection('icono')
-            {!! trim($__env->yieldContent('icono')) !!}
-        @endif
-        @yield('titulo')
-    </h1>
-
+            <h1>
+                @hasSection('icono')
+                    {!! trim($__env->yieldContent('icono')) !!}
+                @endif
+                @yield('titulo')
+            </h1>
+            <button class="menu-toggle" id="menu-toggle"><i class="bi bi-list"></i></button>
         </header>
 
         <main>
@@ -245,7 +246,19 @@
         </footer>
     </div>
 
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Menú colapsable en móviles
+        const toggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+
+        toggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    </script>
 </body>
 </html>
