@@ -9,72 +9,51 @@
 
 <!-- ✅ Mensaje de éxito -->
 @if(session('success'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'success',
-                title: 'Éxito',
-                text: "{{ session('success') }}",
-                confirmButtonColor: '#198754'
-            });
-        });
-    </script>
+<script>
+Swal.fire({
+    icon: 'success',
+    title: 'Éxito',
+    text: "{{ session('success') }}",
+    confirmButtonColor: '#198754'
+});
+</script>
 @endif
 
-<!-- ⚠️ Mensajes de error (incluye expediente existente) -->
-@if ($errors->any())
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                html: `{!! implode('<br>', $errors->all()) !!}`,
-                confirmButtonColor: '#dc3545'
-            });
-        });
-    </script>
+<!-- ⚠️ Mensajes de error generales -->
+@if($errors->any())
+<script>
+Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    html: `{!! implode('<br>', $errors->all()) !!}`,
+    confirmButtonColor: '#dc3545'
+});
+</script>
 @endif
 
-<!-- ⚠️ Mensaje específico: expediente clínico ya existente -->
-@if ($errors->has('Paciente_Id'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Expediente ya existente',
-                text: "{{ $errors->first('Paciente_Id') }}",
-                confirmButtonColor: '#dc3545'
-            });
-        });
-    </script>
-@endif
-
-<div class="card shadow-sm">
-    <div class="card-header bg-light fw-semibold fs-5 d-flex align-items-center gap-2">
-        <i class="bi bi-folder-plus text-primary"></i> Crear Expediente Clínico
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-folder-plus"></i> Crear Expediente Clínico
     </div>
 
     <div class="card-body">
-        <form action="{{ route('expedientes.store') }}" method="POST">
+        <form id="formExpediente" action="{{ route('expedientes.store') }}" method="POST">
             @csrf
 
             <div class="row mb-3">
-                <!-- Campo de búsqueda dinámica -->
-                <div class="col-md-6 position-relative">
-                    <label for="buscar_paciente" class="form-label">Paciente</label>
-                    <input type="text" id="buscar_paciente" class="form-control"
-                        placeholder="Escribe el nombre o apellido del paciente..."
-                        value="{{ old('buscar_paciente') }}">
-                    <input type="hidden" name="Paciente_Id" id="paciente_id"
-                        value="{{ old('Paciente_Id') }}" required>
-                    <div id="resultados" class="list-group mt-1 shadow-sm"
-                        style="display:none; position:absolute; width:100%; z-index:1050;"></div>
+                <!-- 🔎 Buscar paciente -->
+                <div class="col-md-6 position-relative mb-4">
+                    <label for="buscar_paciente" class="form-label">Buscar Paciente</label>
+                    <input type="text" id="buscar_paciente" class="form-control" placeholder="Nombre o Apellido">
+                    <input type="hidden" name="Paciente_Id" id="paciente_id" required>
+                    <div id="resultados" class="list-group mt-1 position-absolute w-100 shadow-sm" style="z-index:1050; display:none;"></div>
                 </div>
 
+                <!-- 👨‍⚕️ Médico -->
                 <div class="col-md-6">
                     <label for="medico" class="form-label">Médico responsable</label>
-                    <input type="text" class="form-control"
-                        value="{{ Auth::user()->Nombre ?? Auth::user()->name }} {{ Auth::user()->Apellido ?? '' }}"
+                    <input type="text" class="form-control" 
+                        value="{{ Auth::user()->Nombre ?? Auth::user()->name }} {{ Auth::user()->Apellido ?? '' }}" 
                         readonly>
                 </div>
             </div>
@@ -95,57 +74,94 @@
     </div>
 </div>
 
-<!-- 🔎 Script búsqueda dinámica -->
+<!-- 🧠 Script de búsqueda y validación -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('buscar_paciente');
     const lista = document.getElementById('resultados');
     const hidden = document.getElementById('paciente_id');
-    let timeout = null;
 
-    input.addEventListener('input', function() {
+    input.addEventListener('input', async function() {
         const q = this.value.trim();
-        clearTimeout(timeout);
+        if (q.length < 2) { lista.style.display = 'none'; return; }
 
-        if (q.length < 2) {
+        try {
+            const res = await fetch(`/expedientes/buscar-pacientes?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            lista.innerHTML = '';
+
+            if (data.length > 0) {
+                data.forEach(p => {
+                    const nombre = `${p.Nombre} ${p.Apellido}`.trim();
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.classList.add('list-group-item','list-group-item-action');
+                    item.textContent = nombre;
+
+                    item.addEventListener('click', async ev => {
+                        ev.preventDefault();
+                        input.value = nombre;
+                        hidden.value = p.Id_Paciente;
+                        lista.style.display = 'none';
+
+                        // ✅ Verificar si ya tiene expediente
+                        const check = await fetch(`/verificar-expediente/${p.Id_Paciente}`);
+                        const { existe } = await check.json();
+
+                        if (existe) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Expediente ya existente',
+                                text: `El paciente ${nombre} ya cuenta con un expediente clínico.`,
+                                confirmButtonColor: '#dc3545'
+                            });
+                            input.value = ''; 
+                            hidden.value = '';
+                        }
+                    });
+                    lista.appendChild(item);
+                });
+                lista.style.display = 'block';
+            } else {
+                lista.innerHTML = '<div class="list-group-item text-muted">No se encontraron resultados</div>';
+                lista.style.display = 'block';
+            }
+        } catch (err) {
+            console.error(err);
             lista.style.display = 'none';
+        }
+    });
+
+    // Cerrar lista si se hace clic fuera
+    document.addEventListener('click', e => { 
+        if (!lista.contains(e.target) && e.target !== input) lista.style.display = 'none'; 
+    });
+
+    // Confirmación antes de enviar formulario
+    document.getElementById('formExpediente').addEventListener('submit', function(ev) {
+        ev.preventDefault();
+        if (!hidden.value) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Selecciona un paciente',
+                text: 'Debes elegir un paciente antes de crear el expediente.',
+                confirmButtonColor: '#dc3545'
+            });
             return;
         }
 
-        timeout = setTimeout(() => {
-            fetch(`{{ route('expedientes.buscarPacientes') }}?q=${encodeURIComponent(q)}`)
-                .then(res => res.json())
-                .then(data => {
-                    lista.innerHTML = '';
-                    if (data.length > 0) {
-                        data.forEach(p => {
-                            const item = document.createElement('a');
-                            item.href = '#';
-                            item.classList.add('list-group-item', 'list-group-item-action');
-                            item.textContent = `${p.Nombre} ${p.Apellido}`;
-                            item.addEventListener('click', e => {
-                                e.preventDefault();
-                                input.value = `${p.Nombre} ${p.Apellido}`;
-                                hidden.value = p.Id_Paciente;
-                                lista.style.display = 'none';
-                            });
-                            lista.appendChild(item);
-                        });
-                        lista.style.display = 'block';
-                    } else {
-                        lista.style.display = 'none';
-                    }
-                })
-                .catch(() => lista.style.display = 'none');
-        }, 300);
-    });
-
-    document.addEventListener('click', e => {
-        if (!lista.contains(e.target) && e.target !== input) {
-            lista.style.display = 'none';
-        }
+        Swal.fire({
+            title: '¿Crear expediente clínico?',
+            text: 'Confirma que deseas guardar este expediente.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#198754'
+        }).then(result => {
+            if (result.isConfirmed) this.submit();
+        });
     });
 });
 </script>
-
 @endsection
