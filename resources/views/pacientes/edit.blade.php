@@ -8,11 +8,23 @@
 
 @section('contenido')
 <div class="card p-4 shadow-sm">
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+
+    {{-- SweetAlert de éxito --}}
+    @if (session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ session('success') }}',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#198754', // verde Bootstrap
+                    timer: 2500,
+                    timerProgressBar: true
+                });
+            });
+        </script>
     @endif
 
     <form action="{{ route('pacientes.update', $paciente->Id_Paciente) }}" method="POST">

@@ -8,10 +8,6 @@
 
 @section('contenido')
     <div class="container mt-4">
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
         <form action="{{ route('notas.update', $nota->Id_Nota) }}" method="POST" class="card p-4 shadow-sm" id="formNota">
             @csrf
             @method('PUT')
@@ -87,6 +83,22 @@
         </form>
     </div>
 
+    {{-- ✅ SweetAlert2 para mostrar éxito --}}
+    @if(session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Nota médica actualizada!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#198754',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    {{-- 🔍 Script para búsqueda dinámica --}}
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('buscar_historia');
