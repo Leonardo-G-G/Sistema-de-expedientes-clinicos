@@ -6,6 +6,7 @@ use App\Models\Expediente;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 
 class ExpedienteController extends Controller
 {
@@ -15,17 +16,15 @@ class ExpedienteController extends Controller
         $medicoId = Auth::user()->Id_Usuario;
 
         $expedientes = Expediente::with(['paciente', 'medico'])
-            ->where('Medico_Id', $medicoId) // 🔒 Solo expedientes del médico logueado
-            ->when($search, fn($query) =>
-                $query->whereHas('paciente', fn($q) =>
-                    $q->where(fn($sub) =>
-                        $sub->where('Nombre', 'like', "%{$search}%")
-                            ->orWhere('Apellido', 'like', "%{$search}%")
-                            ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
-                            ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"])
-                    )
-                )
-            )
+            ->where('Medico_Id', $medicoId)
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('paciente', function ($q) use ($search) {
+                    $q->where('Nombre', 'like', "%{$search}%")
+                      ->orWhere('Apellido', 'like', "%{$search}%")
+                      ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$search}%"])
+                      ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$search}%"]);
+                });
+            })
             ->orderByDesc('Fecha_Apertura')
             ->paginate(10)
             ->appends(['search' => $search]);
@@ -37,7 +36,6 @@ class ExpedienteController extends Controller
     {
         $medicoId = Auth::user()->Id_Usuario;
 
-        // 🔒 Solo mostrar pacientes que no tengan expediente o que ya estén bajo este médico
         $pacientes = Paciente::whereDoesntHave('expediente')
             ->orWhereHas('expediente', function ($q) use ($medicoId) {
                 $q->where('Medico_Id', $medicoId);
@@ -59,7 +57,7 @@ class ExpedienteController extends Controller
 
         $medicoId = Auth::user()->Id_Usuario;
 
-        // 🔒 Verificar si ya existe expediente para ese paciente y médico
+        // Verificar si el expediente ya existe
         $existe = Expediente::where('Paciente_Id', $request->Paciente_Id)
             ->where('Medico_Id', $medicoId)
             ->exists();
@@ -74,7 +72,7 @@ class ExpedienteController extends Controller
         $expediente->Paciente_Id = $request->Paciente_Id;
         $expediente->Medico_Id = $medicoId;
         $expediente->Estado_Expediente = 'Activo';
-        $expediente->Fecha_Apertura = now()->toDateString();
+        $expediente->Fecha_Apertura = Carbon::now()->format('Y-m-d');
         $expediente->save();
 
         return redirect()->route('expedientes.index')
@@ -131,24 +129,24 @@ class ExpedienteController extends Controller
 
         $expedientes = Expediente::with('paciente')
             ->where('Medico_Id', $medicoId)
-            ->whereHas('paciente', fn($q) =>
-                $q->where(fn($sub) =>
-                    $sub->where('Nombre', 'like', "%{$query}%")
-                        ->orWhere('Apellido', 'like', "%{$query}%")
-                        ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$query}%"])
-                        ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$query}%"])
-                )
-            )
+            ->whereHas('paciente', function ($q) use ($query) {
+                $q->where('Nombre', 'like', "%{$query}%")
+                  ->orWhere('Apellido', 'like', "%{$query}%")
+                  ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$query}%"])
+                  ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$query}%"]);
+            })
             ->limit(10)
             ->get();
 
         return response()->json(
-            $expedientes->map(fn($e) => [
-                'Id_Expediente' => $e->Id_Expediente,
-                'Nombre' => $e->paciente->Nombre ?? '',
-                'Apellido' => $e->paciente->Apellido ?? '',
-                'Fecha_Apertura' => optional($e->Fecha_Apertura)->format('Y-m-d'),
-            ])
+            $expedientes->map(function ($e) {
+                return [
+                    'Id_Expediente' => $e->Id_Expediente,
+                    'Nombre' => $e->paciente->Nombre ?? '',
+                    'Apellido' => $e->paciente->Apellido ?? '',
+                    'Fecha_Apertura' => Carbon::parse($e->Fecha_Apertura)->format('Y-m-d'),
+                ];
+            })
         );
     }
 
@@ -161,16 +159,17 @@ class ExpedienteController extends Controller
             return response()->json([]);
         }
 
-        // 🔒 Buscar solo pacientes sin expediente o del mismo médico
-        $pacientes = Paciente::where(fn($q) =>
+        $pacientes = Paciente::where(function ($q) use ($query) {
                 $q->where('Nombre', 'like', "%{$query}%")
                   ->orWhere('Apellido', 'like', "%{$query}%")
                   ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$query}%"])
-                  ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$query}%"])
-            )
+                  ->orWhereRaw("CONCAT(Apellido, ' ', Nombre) LIKE ?", ["%{$query}%"]);
+            })
             ->where(function ($q) use ($medicoId) {
                 $q->whereDoesntHave('expediente')
-                  ->orWhereHas('expediente', fn($sub) => $sub->where('Medico_Id', $medicoId));
+                  ->orWhereHas('expediente', function ($sub) use ($medicoId) {
+                      $sub->where('Medico_Id', $medicoId);
+                  });
             })
             ->limit(10)
             ->get(['Id_Paciente', 'Nombre', 'Apellido']);
