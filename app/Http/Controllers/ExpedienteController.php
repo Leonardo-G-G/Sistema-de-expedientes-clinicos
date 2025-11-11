@@ -76,7 +76,7 @@ class ExpedienteController extends Controller
         $expediente->save();
 
         return redirect()->route('expedientes.index')
-                         ->with('success', '✅ Expediente creado exitosamente.');
+                         ->with('success', ' Expediente creado exitosamente.');
     }
 
     public function edit($Id_Expediente)
@@ -104,7 +104,7 @@ class ExpedienteController extends Controller
         $expediente->save();
 
         return redirect()->route('expedientes.index')
-                         ->with('success', '✅ Expediente actualizado correctamente.');
+                         ->with('success', ' Expediente actualizado correctamente.');
     }
 
     public function destroy($Id_Expediente)

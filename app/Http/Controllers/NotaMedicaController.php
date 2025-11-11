@@ -88,7 +88,7 @@ class NotaMedicaController extends Controller
             'Hora'  => now()->format('H:i:s'),
         ]);
 
-        return redirect()->route('notas.index')->with('success', '✅ Nota médica registrada correctamente.');
+        return redirect()->route('notas.index')->with('success', 'Nota médica registrada correctamente.');
     }
 
     // 📄 Ver una nota médica
@@ -156,7 +156,7 @@ class NotaMedicaController extends Controller
             'Hora'  => now()->format('H:i:s'),
         ]);
 
-        return redirect()->route('notas.index')->with('success', '✅ Nota médica actualizada correctamente.');
+        return redirect()->route('notas.index')->with('success', ' Nota médica actualizada correctamente.');
     }
 
     // 🔍 Búsqueda AJAX de historias clínicas

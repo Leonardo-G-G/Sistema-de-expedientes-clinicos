@@ -111,7 +111,7 @@ class PacienteController extends Controller
         ]));
 
         return redirect()->route('pacientes.index')
-                 ->with('success', '✅ Datos del paciente actualizados correctamente.');
+                 ->with('success', ' Datos del paciente actualizados correctamente.');
 
     }
 
@@ -124,7 +124,7 @@ class PacienteController extends Controller
         $paciente->delete();
 
         return redirect()->route('pacientes.index')
-                         ->with('success', '🗑️ Paciente eliminado correctamente.');
+                         ->with('success', 'Paciente eliminado correctamente.');
     }
 
     /**
