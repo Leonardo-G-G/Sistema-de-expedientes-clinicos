@@ -33,9 +33,10 @@
                 <i class="bi bi-list-ul"></i> Listado de Pacientes
             </span>
             <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('pacientes.create') }}" class="btn btn-new">
+                <a href="{{ route('pacientes.create') }}" class="btn btn-primary">
                     <i class="bi bi-person-plus"></i> Nuevo Paciente
                 </a>
+                
                 <form action="{{ route('pacientes.index') }}" method="GET" class="d-flex">
                     <input type="text" name="search" class="form-control me-2" placeholder="Buscar paciente..." value="{{ request('search') }}">
                     <button type="submit" class="btn btn-light">
