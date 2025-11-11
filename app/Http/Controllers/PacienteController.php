@@ -70,7 +70,7 @@ class PacienteController extends Controller
             'Fecha_Nacimiento'
         ]));
 
-        return redirect()->route('pacientes.create')->with('success', 'Paciente registrado exitosamente.');
+        return redirect()->route('pacientes.index')->with('success', 'Paciente registrado exitosamente.');
 
     }
 

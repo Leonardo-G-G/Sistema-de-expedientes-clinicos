@@ -8,30 +8,6 @@
 
 @section('contenido')
 
-<!-- ✅ Mensaje de éxito -->
-@if(session('success'))
-<script>
-Swal.fire({
-    icon: 'success',
-    title: 'Éxito',
-    text: "{{ session('success') }}",
-    confirmButtonColor: '#198754'
-});
-</script>
-@endif
-
-<!-- ⚠️ Mensajes de error generales -->
-@if($errors->any())
-<script>
-Swal.fire({
-    icon: 'error',
-    title: 'Error',
-    html: `{!! implode('<br>', $errors->all()) !!}`,
-    confirmButtonColor: '#dc3545'
-});
-</script>
-@endif
-
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-primary text-white">
         <i class="bi bi-journal-medical"></i> Registrar Nota Médica
@@ -98,7 +74,7 @@ Swal.fire({
             </div>
 
             <div class="d-flex justify-content-between mt-4">
-                <a href="{{ route('notas.index') }}" class="btn btn-secondary">
+                <a href="{{ route('notas.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
                 <button type="submit" class="btn btn-success">
@@ -108,6 +84,33 @@ Swal.fire({
         </form>
     </div>
 </div>
+
+<!-- ✅ SweetAlert2: Éxito, error y validaciones -->
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: "{{ session('success') }}",
+            confirmButtonColor: '#198754'
+        });
+    });
+</script>
+@endif
+
+@if($errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            html: `{!! implode('<br>', $errors->all()) !!}`,
+            confirmButtonColor: '#dc3545'
+        });
+    });
+</script>
+@endif
 
 <!-- 🧠 Script búsqueda, validación y confirmación -->
 <script>

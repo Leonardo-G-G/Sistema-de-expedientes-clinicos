@@ -13,11 +13,7 @@
         </div>
 
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
-            <form action="{{ route('usuario.actualizar') }}" method="POST">
+            <form action="{{ route('usuario.actualizar') }}" method="POST" id="formPerfil">
                 @csrf
                 @method('PUT')
 
@@ -70,4 +66,19 @@
     <footer class="text-center mt-4 text-muted small">
         © {{ date('Y') }} Clínica Quirúrgica Téran — Sistema Clínico
     </footer>
+
+    {{-- ✅ SweetAlert2 para mostrar éxito --}}
+    @if(session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '¡Perfil actualizado!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#198754',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
 @endsection
