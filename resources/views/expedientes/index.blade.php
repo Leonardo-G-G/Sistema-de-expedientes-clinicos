@@ -36,7 +36,6 @@
                     <tr>
                         <th>ID</th>
                         <th>Paciente</th>
-                        <th>Médico</th>
                         <th>Fecha de Apertura</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -47,7 +46,6 @@
                         <tr>
                             <td>{{ $expediente->Id_Expediente }}</td>
                             <td>{{ $expediente->paciente->Nombre ?? 'N/A' }} {{ $expediente->paciente->Apellido ?? '' }}</td>
-                            <td>{{ $expediente->medico->Nombre ?? 'N/A' }}</td>
                             <td>{{ \Carbon\Carbon::parse($expediente->Fecha_Apertura)->format('d/m/Y') }}</td>
                             <td>
                                 <span class="badge 
@@ -76,7 +74,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-3">No hay expedientes registrados.</td>
+                            <td colspan="5" class="text-center text-muted py-3">No hay expedientes registrados.</td>
                         </tr>
                     @endforelse
                 </tbody>
