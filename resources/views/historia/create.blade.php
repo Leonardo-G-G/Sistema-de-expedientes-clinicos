@@ -217,5 +217,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </form>
 
-@include('historia._scripts_busqueda')
+
 @endsection
