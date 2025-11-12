@@ -70,18 +70,8 @@
         </div>
     </form>
 </div>
-@if (session('success'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Éxito!',
-                text: '{{ session('success') }}',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#0d6efd'
-            });
-        });
-    </script>
-@endif
+
+
+
 
 @endsection

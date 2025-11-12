@@ -49,18 +49,22 @@ class PacienteController extends Controller
      * 💾 Guardar nuevo paciente
      */
     public function store(Request $request)
-    {
-        $request->validate([
-            'Nombre' => 'required|string|max:100',
-            'Apellido' => 'required|string|max:100',
-            'Sexo' => 'nullable|string|max:10',
-            'Telefono' => 'nullable|string|max:15',
-            'Lugar_Origen' => 'nullable|string|max:150',
-            'Contacto_Emergencia' => 'nullable|string|max:150',
-            'Fecha_Nacimiento' => 'nullable|date|before_or_equal:today'
-        ]);
+{
+    $request->validate([
+        'Nombre' => 'required|string|max:100',
+        'Apellido' => 'required|string|max:100',
+        'Sexo' => 'nullable|string|max:10',
+        'Telefono' => 'nullable|string|max:15',
+        'Lugar_Origen' => 'nullable|string|max:150',
+        'Contacto_Emergencia' => 'nullable|string|max:150',
+        'Fecha_Nacimiento' => 'nullable|date|before_or_equal:today'
+    ]);
 
-        Paciente::create($request->only([
+    DB::beginTransaction();
+
+    try {
+        // 🧍 Crear el paciente
+        $paciente = Paciente::create($request->only([
             'Nombre',
             'Apellido',
             'Sexo',
@@ -70,9 +74,28 @@ class PacienteController extends Controller
             'Fecha_Nacimiento'
         ]));
 
-        return redirect()->route('pacientes.index')->with('success', 'Paciente registrado exitosamente.');
+        // 🩺 Crear su expediente clínico automáticamente
+        DB::table('expediente')->insert([
+            'Paciente_Id' => $paciente->Id_Paciente,
+            'Medico_Id' => Auth::user()->Id_Usuario,
+            'Fecha_Apertura' => now(),
+            'Estado_Expediente' => 'Activo'
+        ]);
 
+        DB::commit();
+
+        return redirect()
+            ->route('pacientes.index')
+            ->with('success', 'Paciente y expediente clínico creados exitosamente.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()
+            ->withErrors(['error' => 'Ocurrió un error al registrar el paciente: ' . $e->getMessage()])
+            ->withInput();
     }
+}
+ 
 
     /**
      * ✏️ Editar paciente existente

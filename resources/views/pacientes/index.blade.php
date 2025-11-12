@@ -9,24 +9,7 @@
 @section('pacientes_active', 'active')
 
 @section('contenido')
-    {{-- Alerta de éxito --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
-    @endif
-
-    {{-- Alerta de error (por ejemplo, con withErrors) --}}
-    @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @foreach ($errors->all() as $error)
-                <div><i class="bi bi-exclamation-triangle-fill"></i> {{ $error }}</div>
-            @endforeach
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
-    @endif
-
+    {{-- Tabla de pacientes --}}
     <div class="card shadow-sm">
         <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
             <span class="fw-semibold fs-5">
@@ -105,4 +88,26 @@
             </div>
         </div>
     </div>
+
+    {{-- SweetAlert2 de éxito --}}
+    @if (session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#28a745',
+                    confirmButtonText: 'OK',
+                    background: '#f9fdf9',
+                    iconColor: '#28a745',
+                    customClass: {
+                        popup: 'swal-wide',
+                    }
+                });
+            });
+        </script>
+    @endif
+
 @endsection
