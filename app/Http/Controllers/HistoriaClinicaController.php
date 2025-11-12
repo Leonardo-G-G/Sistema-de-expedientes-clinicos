@@ -52,6 +52,32 @@ class HistoriaClinicaController extends Controller
     }
 
     /**
+     * 🔍 Buscar pacientes (AJAX)
+     */
+    public function buscarPacientes(Request $request)
+    {
+        $term = $request->input('term', '');
+        $medicoId = Auth::user()->Id_Usuario;
+
+        $resultados = Expediente::with('paciente')
+            ->where('Medico_Id', $medicoId)
+            ->whereHas('paciente', function ($q) use ($term) {
+                $q->where('Nombre', 'like', "%{$term}%")
+                  ->orWhere('Apellido', 'like', "%{$term}%");
+            })
+            ->limit(10)
+            ->get()
+            ->map(function ($expediente) {
+                return [
+                    'id' => $expediente->Id_Expediente,
+                    'nombre' => $expediente->paciente->Nombre . ' ' . $expediente->paciente->Apellido,
+                ];
+            });
+
+        return response()->json($resultados);
+    }
+
+    /**
      * 💾 Guardar nueva historia clínica
      */
     public function store(Request $request)

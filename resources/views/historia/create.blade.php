@@ -217,5 +217,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </form>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const inputBuscar = document.getElementById('buscar_paciente');
+    const resultados = document.getElementById('resultados');
+    const inputExpediente = document.getElementById('Expediente_Id');
+
+    if (!inputBuscar) return;
+
+    inputBuscar.addEventListener('input', function () {
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            resultados.style.display = 'none';
+            resultados.innerHTML = '';
+            return;
+        }
+
+        fetch(`/api/buscar-paciente?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                resultados.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(paciente => {
+                        const item = document.createElement('a');
+                        item.href = "#";
+                        item.classList.add('list-group-item', 'list-group-item-action');
+                        item.textContent = `${paciente.Nombre} ${paciente.Apellido} (Expediente #${paciente.Id_Expediente})`;
+                        item.addEventListener('click', e => {
+                            e.preventDefault();
+                            inputBuscar.value = `${paciente.Nombre} ${paciente.Apellido}`;
+                            inputExpediente.value = paciente.Id_Expediente;
+                            resultados.style.display = 'none';
+                        });
+                        resultados.appendChild(item);
+                    });
+                    resultados.style.display = 'block';
+                } else {
+                    resultados.innerHTML = '<div class="list-group-item text-muted">Sin resultados</div>';
+                    resultados.style.display = 'block';
+                }
+            })
+            .catch(err => console.error(err));
+    });
+
+    document.addEventListener('click', e => {
+        if (!resultados.contains(e.target) && e.target !== inputBuscar) {
+            resultados.style.display = 'none';
+        }
+    });
+});
+</script>
+@endsection
+
+
 
 @endsection
