@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="card-body">
             <div class="col-md-6 mb-3">
-                <label for="buscar_paciente" class="form-label">Expediente</label>
+                <label class="form-label">Expediente</label>
                 <input type="text" class="form-control" disabled
                     value="Expediente #{{ $historia->expediente->Id_Expediente }} - {{ optional($historia->expediente->paciente)->Nombre }} {{ optional($historia->expediente->paciente)->Apellido }}">
                 <input type="hidden" name="Expediente_Id" value="{{ $historia->Expediente_Id }}">
@@ -68,11 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </select>
                 </div>
             @endforeach
+
             <div class="col-md-6 mb-3">
-                <label class="form-label">Descripcion</label>
-                <input type="text" name="heredofamiliares[Enfermedades_Cronicas]" class="form-control" value="{{ $h['Enfermedades_Cronicas'] ?? '' }}">
+                <label class="form-label">Descripción</label>
+                <input type="text" name="heredofamiliares[Descripcion]" class="form-control"
+                    value="{{ $h['Descripcion'] ?? '' }}">
             </div>
-            
         </div>
     </div>
 

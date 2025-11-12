@@ -66,11 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </select>
             </div>
         @endforeach
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Descripcion</label>
-            <input type="text" name="heredofamiliares[Enfermedades_Cronicas]" class="form-control">
+        <div class="col-md-12 mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="heredofamiliares[Descripcion]" class="form-control" rows="2" placeholder="Especifique antecedentes familiares relevantes..."></textarea>
         </div>
-        
     </div>
 </div>
 
@@ -218,80 +217,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </form>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('buscar_paciente');
-    const lista = document.getElementById('resultados');
-    const hidden = document.getElementById('Expediente_Id');
-
-    input.addEventListener('input', async function() {
-        const q = this.value.trim();
-        if (q.length < 2) { lista.style.display = 'none'; return; }
-
-        try {
-            const res = await fetch(`/expedientes/buscar-expedientes?q=${encodeURIComponent(q)}`);
-            const data = await res.json();
-            lista.innerHTML = '';
-            if (data.length > 0) {
-                data.forEach(e => {
-                    const nombre = `${e.Nombre} ${e.Apellido}`.trim();
-                    const item = document.createElement('a');
-                    item.href = '#';
-                    item.classList.add('list-group-item','list-group-item-action');
-                    item.textContent = `${nombre} — Expediente #${e.Id_Expediente}`;
-                    item.addEventListener('click', async ev => {
-                        ev.preventDefault();
-                        input.value = nombre;
-                        lista.style.display = 'none';
-                        hidden.value = e.Id_Expediente;
-                        const check = await fetch(`/verificar-historia/${e.Id_Expediente}`);
-                        const { existe } = await check.json();
-                        if (existe) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Ya existe una historia clínica',
-                                text: `El expediente #${e.Id_Expediente} ya tiene una historia registrada.`
-                            });
-                            input.value = ''; hidden.value = '';
-                        }
-                    });
-                    lista.appendChild(item);
-                });
-                lista.style.display = 'block';
-            } else {
-                lista.innerHTML = '<div class="list-group-item text-muted">No se encontraron resultados</div>';
-                lista.style.display = 'block';
-            }
-        } catch (err) { console.error(err); lista.style.display = 'none'; }
-    });
-
-    document.addEventListener('click', e => { 
-        if (!lista.contains(e.target) && e.target !== input) lista.style.display = 'none'; 
-    });
-
-    document.getElementById('formHistoria').addEventListener('submit', function(ev) {
-        ev.preventDefault();
-        if (!hidden.value) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Selecciona un paciente',
-                text: 'Debes elegir un expediente antes de registrar la historia clínica.'
-            });
-            return;
-        }
-        Swal.fire({
-            title: '¿Registrar historia clínica?',
-            text: 'Confirma que deseas guardar esta información.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, guardar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#0d6efd'
-        }).then(result => {
-            if (result.isConfirmed) this.submit();
-        });
-    });
-});
-</script>
-
+@include('historia._scripts_busqueda')
 @endsection

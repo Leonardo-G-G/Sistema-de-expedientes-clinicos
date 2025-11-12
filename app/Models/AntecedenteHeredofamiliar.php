@@ -15,9 +15,7 @@ class AntecedenteHeredofamiliar extends Model
         'Diabetes',
         'Hipertension',
         'Cancer',
-        'Trastornos_Mentales',
-        'Enfermedades_Cronicas',
-        
+        'Descripcion',
     ];
 
     public function historia()

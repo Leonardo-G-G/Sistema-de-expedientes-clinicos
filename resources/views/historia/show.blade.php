@@ -215,8 +215,7 @@
             <p><strong>Diabetes:</strong> {{ optional($historia->heredofamiliares)->Diabetes ? 'Sí' : 'No' }}</p>
             <p><strong>Hipertensión:</strong> {{ optional($historia->heredofamiliares)->Hipertension ? 'Sí' : 'No' }}</p>
             <p><strong>Cáncer:</strong> {{ optional($historia->heredofamiliares)->Cancer ? 'Sí' : 'No' }}</p>
-            <p><strong>Enfermedades Crónicas:</strong> {{ optional($historia->heredofamiliares)->Enfermedades_Cronicas ?? '---' }}</p>
-            
+            <p><strong>Descripción:</strong> {{ optional($historia->heredofamiliares)->Descripcion ?? '---' }}</p>
         </div>
     </div>
 
@@ -259,7 +258,7 @@
         </div>
     </div>
 
-    <!-- Nota Médica -->
+    <!-- Notas Médicas -->
     @if($historia->notaMedicas && $historia->notaMedicas->count() > 0)
     <div class="card mb-4">
         <div class="card-header"><i class="bi bi-journal-text"></i> Notas Médicas</div>
