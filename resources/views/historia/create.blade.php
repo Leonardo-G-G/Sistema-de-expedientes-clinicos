@@ -42,11 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
         <i class="bi bi-person-lines-fill"></i> Datos Generales
     </div>
     <div class="card-body">
-        <div class="col-md-6 position-relative mb-4">
-            <label for="buscar_paciente" class="form-label">Buscar Paciente</label>
-            <input type="text" id="buscar_paciente" class="form-control" placeholder="Nombre o Apellido">
-            <input type="hidden" name="Expediente_Id" id="Expediente_Id" required>
-            <div id="resultados" class="list-group mt-1 position-absolute w-100" style="z-index:1050; display:none;"></div>
+        <div class="col-md-6 mb-4">
+            <label for="Expediente_Id" class="form-label">Seleccionar Paciente</label>
+            <select name="Expediente_Id" id="Expediente_Id" class="form-select" required>
+                <option value="">Seleccione un paciente...</option>
+                @foreach($expedientes as $expediente)
+                    <option value="{{ $expediente->Id_Expediente }}">
+                        {{ $expediente->paciente->Nombre }} {{ $expediente->paciente->Apellido }} — Expediente #{{ $expediente->Id_Expediente }}
+                    </option>
+                @endforeach
+            </select>
         </div>
     </div>
 </div>
@@ -218,58 +223,29 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const inputBuscar = document.getElementById('buscar_paciente');
-    const resultados = document.getElementById('resultados');
-    const inputExpediente = document.getElementById('Expediente_Id');
-
-    if (!inputBuscar) return;
-
-    inputBuscar.addEventListener('input', function () {
-        const query = this.value.trim();
-
-        if (query.length < 2) {
-            resultados.style.display = 'none';
-            resultados.innerHTML = '';
-            return;
-        }
-
-        fetch(`/api/buscar-paciente?q=${encodeURIComponent(query)}`)
-            .then(res => res.json())
-            .then(data => {
-                resultados.innerHTML = '';
-                if (data.length > 0) {
-                    data.forEach(paciente => {
-                        const item = document.createElement('a');
-                        item.href = "#";
-                        item.classList.add('list-group-item', 'list-group-item-action');
-                        item.textContent = `${paciente.Nombre} ${paciente.Apellido} (Expediente #${paciente.Id_Expediente})`;
-                        item.addEventListener('click', e => {
-                            e.preventDefault();
-                            inputBuscar.value = `${paciente.Nombre} ${paciente.Apellido}`;
-                            inputExpediente.value = paciente.Id_Expediente;
-                            resultados.style.display = 'none';
-                        });
-                        resultados.appendChild(item);
-                    });
-                    resultados.style.display = 'block';
-                } else {
-                    resultados.innerHTML = '<div class="list-group-item text-muted">Sin resultados</div>';
-                    resultados.style.display = 'block';
-                }
-            })
-            .catch(err => console.error(err));
-    });
-
-    document.addEventListener('click', e => {
-        if (!resultados.contains(e.target) && e.target !== inputBuscar) {
-            resultados.style.display = 'none';
-        }
+document.getElementById('formHistoria').addEventListener('submit', function(ev) {
+    ev.preventDefault();
+    const select = document.getElementById('Expediente_Id');
+    if (!select.value) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Selecciona un paciente',
+            text: 'Debes elegir un expediente antes de registrar la historia clínica.'
+        });
+        return;
+    }
+    Swal.fire({
+        title: '¿Registrar historia clínica?',
+        text: 'Confirma que deseas guardar esta información.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, guardar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0d6efd'
+    }).then(result => {
+        if (result.isConfirmed) this.submit();
     });
 });
 </script>
-@endsection
-
-
 
 @endsection

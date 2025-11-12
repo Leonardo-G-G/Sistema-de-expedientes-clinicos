@@ -52,29 +52,32 @@ class HistoriaClinicaController extends Controller
     }
 
     /**
-     * 🔍 Buscar pacientes (AJAX)
+     * 🔍 Buscar pacientes (AJAX para Select2 o dropdown dinámico)
      */
     public function buscarPacientes(Request $request)
     {
-        $term = $request->input('term', '');
+        $term = trim($request->input('term', ''));
         $medicoId = Auth::user()->Id_Usuario;
 
         $resultados = Expediente::with('paciente')
             ->where('Medico_Id', $medicoId)
             ->whereHas('paciente', function ($q) use ($term) {
                 $q->where('Nombre', 'like', "%{$term}%")
-                  ->orWhere('Apellido', 'like', "%{$term}%");
+                  ->orWhere('Apellido', 'like', "%{$term}%")
+                  ->orWhereRaw("CONCAT(Nombre, ' ', Apellido) LIKE ?", ["%{$term}%"]);
             })
             ->limit(10)
             ->get()
             ->map(function ($expediente) {
                 return [
                     'id' => $expediente->Id_Expediente,
-                    'nombre' => $expediente->paciente->Nombre . ' ' . $expediente->paciente->Apellido,
+                    'text' => $expediente->paciente 
+                        ? ($expediente->paciente->Nombre . ' ' . $expediente->paciente->Apellido)
+                        : 'Paciente sin nombre',
                 ];
             });
 
-        return response()->json($resultados);
+        return response()->json(['results' => $resultados]);
     }
 
     /**
@@ -193,7 +196,6 @@ class HistoriaClinicaController extends Controller
         DB::transaction(function () use ($historia, $request) {
             $normalize = fn($v) => in_array(strtolower($v), ['sí', 'si', '1', 'true'], true) ? 1 : 0;
 
-            // 🔹 Actualizar Heredofamiliares, No Patológicos, Ginecoobstétricos
             foreach ([
                 'heredofamiliares' => ['Diabetes', 'Hipertension', 'Cancer'],
                 'no_patologicos' => ['Tabaquismo', 'Alcoholismo', 'Drogas'],
@@ -220,7 +222,6 @@ class HistoriaClinicaController extends Controller
                 }
             }
 
-            // 🔹 Patológicos
             if ($request->filled('patologicos')) {
                 $historia->patologicos()->updateOrCreate(
                     ['Historia_Id' => $historia->Id_Historia],
@@ -228,7 +229,6 @@ class HistoriaClinicaController extends Controller
                 );
             }
 
-            // 🔹 Nota médica
             if ($request->filled('nota_medica')) {
                 $nota = $request->input('nota_medica');
                 $nota['Fecha'] = now()->format('Y-m-d');
