@@ -69,13 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             @endforeach
             <div class="col-md-6 mb-3">
-                <label class="form-label">Enfermedades Crónicas</label>
+                <label class="form-label">Descripcion</label>
                 <input type="text" name="heredofamiliares[Enfermedades_Cronicas]" class="form-control" value="{{ $h['Enfermedades_Cronicas'] ?? '' }}">
             </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Otros</label>
-                <input type="text" name="heredofamiliares[Otros]" class="form-control" value="{{ $h['Otros'] ?? '' }}">
-            </div>
+            
         </div>
     </div>
 
@@ -86,12 +83,27 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="card-body row">
             @php $np = $historia->noPatologicos ?? []; @endphp
+
             @foreach(['Tipo_Vivienda','Religion','Alimentacion','Actividad_Fisica'] as $campo)
                 <div class="col-md-6 mb-3">
                     <label class="form-label">{{ str_replace('_',' ',$campo) }}</label>
                     <input type="text" name="no_patologicos[{{ $campo }}]" class="form-control" value="{{ $np[$campo] ?? '' }}">
                 </div>
             @endforeach
+
+            <!-- NUEVO CAMPO: Tipo de Sangre -->
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Tipo de Sangre</label>
+                <select name="no_patologicos[Tipo_Sangre]" class="form-select">
+                    <option value="">Seleccione</option>
+                    @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $tipo)
+                        <option value="{{ $tipo }}" {{ ($np['Tipo_Sangre'] ?? '') == $tipo ? 'selected' : '' }}>
+                            {{ $tipo }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             @foreach(['Tabaquismo','Alcoholismo','Drogas'] as $campo)
                 <div class="col-md-4 mb-3">
                     <label class="form-label">{{ $campo }}</label>

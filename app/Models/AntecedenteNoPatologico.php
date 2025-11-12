@@ -19,6 +19,7 @@ class AntecedenteNoPatologico extends Model
         'Tabaquismo',
         'Alcoholismo',
         'Drogas',
+        'Tipo_Sangre', 
     ];
 
     public function historia()

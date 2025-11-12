@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->boolean('Tabaquismo')->default(false);
             $table->boolean('Alcoholismo')->default(false);
             $table->boolean('Drogas')->default(false);
+            $table->string('Tipo_Sangre', 10)->nullable();
         });
     }
 

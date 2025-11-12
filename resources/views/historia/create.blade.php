@@ -67,13 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         @endforeach
         <div class="col-md-6 mb-3">
-            <label class="form-label">Enfermedades Crónicas</label>
+            <label class="form-label">Descripcion</label>
             <input type="text" name="heredofamiliares[Enfermedades_Cronicas]" class="form-control">
         </div>
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Otros</label>
-            <input type="text" name="heredofamiliares[Otros]" class="form-control">
-        </div>
+        
     </div>
 </div>
 
@@ -89,6 +86,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="text" name="no_patologicos[{{ $campo }}]" class="form-control">
             </div>
         @endforeach
+
+        <!-- Nuevo campo: Tipo de Sangre -->
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Tipo de Sangre</label>
+            <select name="no_patologicos[Tipo_Sangre]" class="form-select">
+                <option value="">Seleccione...</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+            </select>
+        </div>
+
         @foreach(['Tabaquismo','Alcoholismo','Drogas'] as $campo)
             <div class="col-md-4 mb-3">
                 <label class="form-label">{{ $campo }}</label>
@@ -255,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lista.contains(e.target) && e.target !== input) lista.style.display = 'none'; 
     });
 
-    // Confirmar antes de enviar el formulario
     document.getElementById('formHistoria').addEventListener('submit', function(ev) {
         ev.preventDefault();
         if (!hidden.value) {

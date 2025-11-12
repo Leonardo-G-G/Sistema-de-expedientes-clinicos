@@ -56,11 +56,6 @@
             color: #fff;
         }
 
-        .user-info p {
-            font-weight: 500;
-            margin-top: 0.5rem;
-        }
-
         .sidebar a {
             color: #e0e0e0;
             text-decoration: none;
@@ -91,11 +86,6 @@
             transition: 0.3s;
         }
 
-        .logout-btn:hover {
-            background-color: #b52d3a;
-        }
-
-        /* MAIN CONTENT */
         .main-content {
             margin-left: 260px;
             padding: 2rem;
@@ -120,22 +110,11 @@
             gap: 10px;
         }
 
-        header h1 i {
-            font-size: 1.9rem;
-        }
-
-        /* CARD DESIGN */
         .card {
             border: none;
             border-radius: 16px;
             background: var(--card-bg);
             box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
         }
 
         .card-header {
@@ -160,20 +139,6 @@
             padding: 0.6rem 1.3rem;
         }
 
-        .btn i {
-            margin-right: 6px;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            border-color: var(--primary-dark);
-        }
-
         @media (max-width: 768px) {
             .sidebar {
                 position: relative;
@@ -182,15 +147,9 @@
                 flex-direction: row;
                 overflow-x: auto;
             }
-
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
-            }
-
-            header {
-                border-radius: 10px;
-                text-align: center;
             }
         }
     </style>
@@ -235,7 +194,9 @@
 <div class="main-content">
     <header>
         <h1><i class="bi bi-clipboard2-pulse"></i> Historia Clínica</h1>
-        <p class="mb-0">Paciente: <strong>{{ $historia->expediente->paciente->Nombre ?? '---' }} {{ $historia->expediente->paciente->Apellido ?? '' }}</strong></p>
+        <p class="mb-0">Paciente: 
+            <strong>{{ $historia->expediente->paciente->Nombre ?? '---' }} {{ $historia->expediente->paciente->Apellido ?? '' }}</strong>
+        </p>
     </header>
 
     <!-- Datos Generales -->
@@ -243,7 +204,7 @@
         <div class="card-header"><i class="bi bi-info-circle"></i> Datos Generales</div>
         <div class="card-body">
             <p><strong>ID Expediente:</strong> {{ $historia->Expediente_Id }}</p>
-            <p><strong>Fecha de Creación:</strong> {{ now()->format('d/m/Y') }}</p>
+            <p><strong>Fecha de Creación:</strong> {{ $historia->created_at ? $historia->created_at->format('d/m/Y') : now()->format('d/m/Y') }}</p>
         </div>
     </div>
 
@@ -251,11 +212,11 @@
     <div class="card mb-4">
         <div class="card-header"><i class="bi bi-people"></i> Antecedentes Heredofamiliares</div>
         <div class="card-body">
-            <p><strong>Diabetes:</strong> {{ $historia->heredofamiliares->Diabetes ? 'Sí' : 'No' }}</p>
-            <p><strong>Hipertensión:</strong> {{ $historia->heredofamiliares->Hipertension ? 'Sí' : 'No' }}</p>
-            <p><strong>Cáncer:</strong> {{ $historia->heredofamiliares->Cancer ? 'Sí' : 'No' }}</p>
-            <p><strong>Enfermedades Crónicas:</strong> {{ $historia->heredofamiliares->Enfermedades_Cronicas ?? '---' }}</p>
-            <p><strong>Otros:</strong> {{ $historia->heredofamiliares->Otros ?? '---' }}</p>
+            <p><strong>Diabetes:</strong> {{ optional($historia->heredofamiliares)->Diabetes ? 'Sí' : 'No' }}</p>
+            <p><strong>Hipertensión:</strong> {{ optional($historia->heredofamiliares)->Hipertension ? 'Sí' : 'No' }}</p>
+            <p><strong>Cáncer:</strong> {{ optional($historia->heredofamiliares)->Cancer ? 'Sí' : 'No' }}</p>
+            <p><strong>Enfermedades Crónicas:</strong> {{ optional($historia->heredofamiliares)->Enfermedades_Cronicas ?? '---' }}</p>
+            
         </div>
     </div>
 
@@ -263,13 +224,14 @@
     <div class="card mb-4">
         <div class="card-header"><i class="bi bi-house-heart"></i> Antecedentes No Patológicos</div>
         <div class="card-body">
-            <p><strong>Tipo de Vivienda:</strong> {{ $historia->noPatologicos->Tipo_Vivienda ?? '---' }}</p>
-            <p><strong>Religión:</strong> {{ $historia->noPatologicos->Religion ?? '---' }}</p>
-            <p><strong>Alimentación:</strong> {{ $historia->noPatologicos->Alimentacion ?? '---' }}</p>
-            <p><strong>Actividad Física:</strong> {{ $historia->noPatologicos->Actividad_Fisica ?? '---' }}</p>
-            <p><strong>Tabaquismo:</strong> {{ $historia->noPatologicos->Tabaquismo ? 'Sí' : 'No' }}</p>
-            <p><strong>Alcoholismo:</strong> {{ $historia->noPatologicos->Alcoholismo ? 'Sí' : 'No' }}</p>
-            <p><strong>Drogas:</strong> {{ $historia->noPatologicos->Drogas ? 'Sí' : 'No' }}</p>
+            <p><strong>Tipo de Vivienda:</strong> {{ optional($historia->noPatologicos)->Tipo_Vivienda ?? '---' }}</p>
+            <p><strong>Religión:</strong> {{ optional($historia->noPatologicos)->Religion ?? '---' }}</p>
+            <p><strong>Alimentación:</strong> {{ optional($historia->noPatologicos)->Alimentacion ?? '---' }}</p>
+            <p><strong>Actividad Física:</strong> {{ optional($historia->noPatologicos)->Actividad_Fisica ?? '---' }}</p>
+            <p><strong>Tipo de Sangre:</strong> {{ optional($historia->noPatologicos)->Tipo_Sangre ?? '---' }}</p>
+            <p><strong>Tabaquismo:</strong> {{ optional($historia->noPatologicos)->Tabaquismo ? 'Sí' : 'No' }}</p>
+            <p><strong>Alcoholismo:</strong> {{ optional($historia->noPatologicos)->Alcoholismo ? 'Sí' : 'No' }}</p>
+            <p><strong>Drogas:</strong> {{ optional($historia->noPatologicos)->Drogas ? 'Sí' : 'No' }}</p>
         </div>
     </div>
 
@@ -277,7 +239,7 @@
     <div class="card mb-4">
         <div class="card-header"><i class="bi bi-clipboard2-heart"></i> Antecedentes Patológicos</div>
         <div class="card-body">
-            <p><strong>Descripción:</strong> {{ $historia->patologicos->Descripcion ?? '---' }}</p>
+            <p><strong>Descripción:</strong> {{ optional($historia->patologicos)->Descripcion ?? '---' }}</p>
         </div>
     </div>
 
@@ -285,15 +247,15 @@
     <div class="card mb-4">
         <div class="card-header"><i class="bi bi-gender-female"></i> Antecedentes Ginecoobstétricos</div>
         <div class="card-body">
-            <p><strong>Menarca (Edad):</strong> {{ $historia->ginecoobstetricos->Menarca_Edad ?? '---' }}</p>
-            <p><strong>Tipo de Ciclo:</strong> {{ $historia->ginecoobstetricos->Tipo_Ciclo ?? '---' }}</p>
-            <p><strong>Ciclos Dolorosos:</strong> {{ $historia->ginecoobstetricos->Ciclos_Dolor ? 'Sí' : 'No' }}</p>
-            <p><strong>Última Regla:</strong> {{ $historia->ginecoobstetricos->Ultima_Regla ?? '---' }}</p>
-            <p><strong>Inicio Vida Sexual:</strong> {{ $historia->ginecoobstetricos->Inicio_Vida_Sexual ?? '---' }}</p>
-            <p><strong>Gestaciones:</strong> {{ $historia->ginecoobstetricos->Gestaciones ?? '0' }}</p>
-            <p><strong>Partos:</strong> {{ $historia->ginecoobstetricos->Partos ?? '0' }}</p>
-            <p><strong>Abortos:</strong> {{ $historia->ginecoobstetricos->Abortos ?? '0' }}</p>
-            <p><strong>Cesáreas:</strong> {{ $historia->ginecoobstetricos->Cesareas ?? '0' }}</p>
+            <p><strong>Menarca (Edad):</strong> {{ optional($historia->ginecoobstetricos)->Menarca_Edad ?? '---' }}</p>
+            <p><strong>Tipo de Ciclo:</strong> {{ optional($historia->ginecoobstetricos)->Tipo_Ciclo ?? '---' }}</p>
+            <p><strong>Ciclos Dolorosos:</strong> {{ optional($historia->ginecoobstetricos)->Ciclos_Dolor ? 'Sí' : 'No' }}</p>
+            <p><strong>Última Regla:</strong> {{ optional($historia->ginecoobstetricos)->Ultima_Regla ?? '---' }}</p>
+            <p><strong>Inicio Vida Sexual:</strong> {{ optional($historia->ginecoobstetricos)->Inicio_Vida_Sexual ?? '---' }}</p>
+            <p><strong>Gestaciones:</strong> {{ optional($historia->ginecoobstetricos)->Gestaciones ?? '0' }}</p>
+            <p><strong>Partos:</strong> {{ optional($historia->ginecoobstetricos)->Partos ?? '0' }}</p>
+            <p><strong>Abortos:</strong> {{ optional($historia->ginecoobstetricos)->Abortos ?? '0' }}</p>
+            <p><strong>Cesáreas:</strong> {{ optional($historia->ginecoobstetricos)->Cesareas ?? '0' }}</p>
         </div>
     </div>
 

@@ -17,7 +17,7 @@ class HistoriaClinicaController extends Controller
         $medicoId = Auth::user()->Id_Usuario;
 
         $historias = HistoriaClinica::with('expediente.paciente')
-            ->whereHas('expediente', fn($q) => $q->where('Medico_Id', $medicoId)) // 🔒 Restricción por médico
+            ->whereHas('expediente', fn($q) => $q->where('Medico_Id', $medicoId))
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('expediente.paciente', function ($q) use ($search) {
                     $q->where('Nombre', 'like', "%{$search}%")
@@ -87,11 +87,15 @@ class HistoriaClinicaController extends Controller
                 $historia->patologicos()->create($request->input('patologicos'));
             }
 
-            // No patológicos
+            // No patológicos (incluye Tipo_Sangre)
             if ($request->filled('no_patologicos')) {
                 $data = $request->input('no_patologicos');
                 foreach (['Tabaquismo', 'Alcoholismo', 'Drogas'] as $c)
                     if (isset($data[$c])) $data[$c] = $normalize($data[$c]);
+                
+                // Asegurar campo Tipo_Sangre
+                if (!isset($data['Tipo_Sangre'])) $data['Tipo_Sangre'] = null;
+
                 $historia->noPatologicos()->create($data);
             }
 
@@ -165,9 +169,16 @@ class HistoriaClinicaController extends Controller
                     $data = $request->input($tipo);
                     foreach ($campos as $c)
                         if (isset($data[$c])) $data[$c] = $normalize($data[$c]);
+
+                    // Incluir Tipo_Sangre si aplica
+                    if ($tipo === 'no_patologicos' && !isset($data['Tipo_Sangre'])) {
+                        $data['Tipo_Sangre'] = null;
+                    }
+
                     $relation = $tipo === 'no_patologicos'
                         ? 'noPatologicos'
                         : ($tipo === 'ginecoobstetricos' ? 'ginecoobstetricos' : $tipo);
+
                     $historia->$relation()->updateOrCreate(
                         ['Historia_Id' => $historia->Id_Historia],
                         $data
