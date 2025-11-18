@@ -10,12 +10,13 @@ use Illuminate\Support\Carbon;
 
 class ExpedienteController extends Controller
 {
+    // 📋 LISTADO DE EXPEDIENTES DEL MÉDICO
     public function index(Request $request)
     {
         $search = trim($request->input('search'));
         $medicoId = Auth::user()->Id_Usuario;
 
-        $expedientes = Expediente::with(['paciente', 'medico'])
+        $expedientes = Expediente::with(['paciente'])
             ->where('Medico_Id', $medicoId)
             ->when($search, function ($query) use ($search) {
                 $query->whereHas('paciente', function ($q) use ($search) {
@@ -32,20 +33,8 @@ class ExpedienteController extends Controller
         return view('expedientes.index', compact('expedientes', 'search'));
     }
 
-    public function create()
-    {
-        $medicoId = Auth::user()->Id_Usuario;
 
-        $pacientes = Paciente::whereDoesntHave('expediente')
-            ->orWhereHas('expediente', function ($q) use ($medicoId) {
-                $q->where('Medico_Id', $medicoId);
-            })
-            ->orderBy('Apellido', 'asc')
-            ->get();
-
-        return view('expedientes.create', compact('pacientes'));
-    }
-
+    // 💾 GUARDAR EXPEDIENTE
     public function store(Request $request)
     {
         $request->validate([
@@ -57,7 +46,7 @@ class ExpedienteController extends Controller
 
         $medicoId = Auth::user()->Id_Usuario;
 
-        // Verificar si el expediente ya existe
+        // Verificar si ya existe expediente
         $existe = Expediente::where('Paciente_Id', $request->Paciente_Id)
             ->where('Medico_Id', $medicoId)
             ->exists();
@@ -68,56 +57,68 @@ class ExpedienteController extends Controller
                 ->withInput();
         }
 
-        $expediente = new Expediente();
-        $expediente->Paciente_Id = $request->Paciente_Id;
-        $expediente->Medico_Id = $medicoId;
-        $expediente->Estado_Expediente = 'Activo';
-        $expediente->Fecha_Apertura = Carbon::now()->format('Y-m-d');
-        $expediente->save();
+        Expediente::create([
+            'Paciente_Id' => $request->Paciente_Id,
+            'Medico_Id' => $medicoId,
+            'Estado_Expediente' => 'Activo',
+            'Fecha_Apertura' => Carbon::now()->format('Y-m-d'),
+        ]);
 
-        return redirect()->route('expedientes.index')
-                         ->with('success', ' Expediente creado exitosamente.');
+        return redirect()
+            ->route('expedientes.index')
+            ->with('success', 'Expediente creado exitosamente.');
     }
 
-    public function edit($Id_Expediente)
+
+    // ✏️ EDITAR
+    public function edit($id)
     {
         $expediente = Expediente::where('Medico_Id', Auth::user()->Id_Usuario)
-            ->findOrFail($Id_Expediente);
+            ->findOrFail($id);
 
-        $pacientes = Paciente::orderBy('Apellido', 'asc')->get();
+        $pacientes = Paciente::orderBy('Apellido')->get();
 
         return view('expedientes.edit', compact('expediente', 'pacientes'));
     }
 
-    public function update(Request $request, $Id_Expediente)
+
+    // 🔄 ACTUALIZAR
+    public function update(Request $request, $id)
     {
         $expediente = Expediente::where('Medico_Id', Auth::user()->Id_Usuario)
-            ->findOrFail($Id_Expediente);
+            ->findOrFail($id);
 
         $request->validate([
             'Paciente_Id' => 'required|exists:paciente,Id_Paciente',
             'Estado_Expediente' => 'required|in:Activo,Inactivo,Cerrado',
         ]);
 
-        $expediente->Paciente_Id = $request->Paciente_Id;
-        $expediente->Estado_Expediente = $request->Estado_Expediente;
-        $expediente->save();
+        $expediente->update([
+            'Paciente_Id' => $request->Paciente_Id,
+            'Estado_Expediente' => $request->Estado_Expediente,
+        ]);
 
-        return redirect()->route('expedientes.index')
-                         ->with('success', ' Expediente actualizado correctamente.');
+        return redirect()
+            ->route('expedientes.index')
+            ->with('success', 'Expediente actualizado correctamente.');
     }
 
-    public function destroy($Id_Expediente)
+
+    // 🗑️ ELIMINAR
+    public function destroy($id)
     {
         $expediente = Expediente::where('Medico_Id', Auth::user()->Id_Usuario)
-            ->findOrFail($Id_Expediente);
+            ->findOrFail($id);
 
         $expediente->delete();
 
-        return redirect()->route('expedientes.index')
-                         ->with('success', '🗑️ Expediente eliminado correctamente.');
+        return redirect()
+            ->route('expedientes.index')
+            ->with('success', '🗑️ Expediente eliminado correctamente.');
     }
 
+
+    // 🔍 BUSCAR EXPEDIENTES (AJAX)
     public function buscarExpedientes(Request $request)
     {
         $query = trim($request->get('q', ''));
@@ -142,14 +143,16 @@ class ExpedienteController extends Controller
             $expedientes->map(function ($e) {
                 return [
                     'Id_Expediente' => $e->Id_Expediente,
-                    'Nombre' => $e->paciente->Nombre ?? '',
-                    'Apellido' => $e->paciente->Apellido ?? '',
+                    'Nombre' => $e->paciente->Nombre,
+                    'Apellido' => $e->paciente->Apellido,
                     'Fecha_Apertura' => Carbon::parse($e->Fecha_Apertura)->format('Y-m-d'),
                 ];
             })
         );
     }
 
+
+    // 🔍 BUSCAR PACIENTES PARA ASIGNAR A EXPEDIENTE (AJAX)
     public function buscarPacientes(Request $request)
     {
         $query = trim($request->get('q', ''));

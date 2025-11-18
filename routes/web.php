@@ -42,7 +42,6 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::prefix('expedientes')->name('expedientes.')->group(function () {
         Route::get('/', [ExpedienteController::class, 'index'])->name('index');
-        Route::get('/crear', [ExpedienteController::class, 'create'])->name('create');
         Route::post('/', [ExpedienteController::class, 'store'])->name('store');
         Route::get('/{Id_Expediente}/editar', [ExpedienteController::class, 'edit'])->name('edit');
         Route::put('/{Id_Expediente}', [ExpedienteController::class, 'update'])->name('update');
@@ -55,8 +54,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/buscar-expedientes', [ExpedienteController::class, 'buscarExpedientes'])->name('buscarExpedientes');
     });
 
-    // ✅ Ruta correcta para buscar historias clínicas (fuera del prefijo "expedientes")
+    // 🔍 Búsqueda de historias clínicas
     Route::get('/buscar-historias', [NotaMedicaController::class, 'buscarHistorias'])->name('buscarHistorias');
+
+    // 🔎 Verificar si una historia ya tiene nota médica
+    Route::get('/verificar-nota/{Historia_Id}', [NotaMedicaController::class, 'verificarNota'])
+        ->name('verificarNota');
 
     /*
     |--------------------------------------------------------------------------
@@ -101,7 +104,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{Id_Paciente}', [PacienteController::class, 'update'])->name('update');
         Route::delete('/{Id_Paciente}', [PacienteController::class, 'destroy'])->name('destroy');
         Route::get('/{Id_Paciente}', [PacienteController::class, 'show'])->name('show');
-
     });
 
     /*

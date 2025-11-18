@@ -63,9 +63,7 @@
         </div>
     </div>
 
-    <footer class="text-center mt-4 text-muted small">
-        © {{ date('Y') }} Clínica Quirúrgica Téran — Sistema Clínico
-    </footer>
+    
 
     {{-- ✅ SweetAlert2 para mostrar éxito --}}
     @if(session('success'))

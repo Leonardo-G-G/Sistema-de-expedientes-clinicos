@@ -18,7 +18,7 @@ class NotaMedicaController extends Controller
 
         $notas = NotaMedica::with('historiaClinica.expediente.paciente')
             ->whereHas('historiaClinica.expediente', function ($q) use ($medicoId) {
-                $q->where('Medico_Id', $medicoId); // 🔒 Solo notas de expedientes del médico actual
+                $q->where('Medico_Id', $medicoId);
             })
             ->when($search, function ($query, $search) {
                 $query->whereHas('historiaClinica.expediente.paciente', function ($q) use ($search) {
@@ -29,7 +29,8 @@ class NotaMedicaController extends Controller
             ->when($fecha, function ($query, $fecha) {
                 $query->whereDate('Fecha', $fecha);
             })
-            ->orderBy('Fecha', 'desc')
+            ->orderBy('Fecha', 'desc')    // Ordenar por fecha descendente
+            ->orderBy('Hora', 'desc')     // Ordenar por hora descendente
             ->paginate(10)
             ->appends($request->all());
 
@@ -88,7 +89,9 @@ class NotaMedicaController extends Controller
             'Hora'  => now()->format('H:i:s'),
         ]);
 
-        return redirect()->route('notas.index')->with('success', 'Nota médica registrada correctamente.');
+        return redirect()
+            ->route('historia.show', $historia->Id_Historia)
+            ->with('success', 'Nota médica registrada correctamente.');
     }
 
     // 📄 Ver una nota médica
@@ -156,7 +159,7 @@ class NotaMedicaController extends Controller
             'Hora'  => now()->format('H:i:s'),
         ]);
 
-        return redirect()->route('notas.index')->with('success', ' Nota médica actualizada correctamente.');
+        return redirect()->route('notas.index')->with('success', 'Nota médica actualizada correctamente.');
     }
 
     // 🔍 Búsqueda AJAX de historias clínicas

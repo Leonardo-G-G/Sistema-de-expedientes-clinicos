@@ -7,7 +7,6 @@
 
 @section('contenido')
 
-<!-- ✅ Mensaje de éxito -->
 @if(session('success'))
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -21,7 +20,6 @@
     </script>
 @endif
 
-<!-- ⚠️ Mensajes de error -->
 @if ($errors->any())
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -35,47 +33,118 @@
     </script>
 @endif
 
-<div class="card shadow-sm">
-    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 bg-light">
-        <span class="fw-semibold fs-5"><i class="bi bi-list-ul text-primary"></i> Listado de Historias Clínicas</span>
+<style>
+    /* --- Diseño moderno clínico --- */
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('historia.create') }}" class="btn btn-primary">
+    .header-clinica {
+        background: linear-gradient(135deg, #e8f2ff, #ffffff);
+        border-bottom: 2px solid #d9e7ff;
+        padding: 20px 25px;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .search-large {
+        width: 380px !important;
+        height: 48px !important;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+
+    .btn-search-modern {
+        height: 48px !important;
+        border-radius: 8px;
+        padding: 0 20px;
+    }
+
+    .table-modern thead {
+        background: #e8f2ff;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #f8fbff;
+    }
+</style>
+
+<div class="card shadow-sm">
+
+    <!-- Encabezado moderno -->
+    <div class="header-clinica d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <h5 class="fw-bold text-primary">
+            <i class="bi bi-list-ul"></i> Listado de Historias Clínicas
+        </h5>
+
+        <div class="d-flex flex-column flex-md-row align-items-center gap-2">
+
+            <a href="{{ route('historia.create') }}" class="btn btn-primary px-4">
                 <i class="bi bi-plus-circle"></i> Crear Historia
             </a>
 
+            <!-- Buscador grande -->
             <form action="{{ route('historia.index') }}" method="GET" class="d-flex">
-                <input type="text" name="search" class="form-control me-2" placeholder="Buscar por paciente..." value="{{ request('search') }}">
-                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+                <input type="text" 
+                       name="search" 
+                       class="form-control search-large me-2 shadow-sm" 
+                       placeholder="Buscar por nombre del paciente..."
+                       value="{{ request('search') }}">
+
+                <button type="submit" class="btn btn-outline-primary btn-search-modern shadow-sm">
+                    <i class="bi bi-search"></i>
+                </button>
             </form>
         </div>
     </div>
 
+    <!-- Tabla -->
     <div class="card-body">
+
         <div class="table-responsive">
-            <table class="table table-striped align-middle text-center">
+            <table class="table table-modern table-striped align-middle text-center">
                 <thead class="table-primary">
                     <tr>
                         <th>ID</th>
                         <th>Paciente</th>
                         <th>Estado Expediente</th>
+                        <th>Notas Médicas</th>
+                        <th>Última Actualización</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @forelse($historias as $historia)
                         <tr>
                             <td>{{ $historia->Id_Historia }}</td>
-                            <td>{{ $historia->expediente->paciente->Nombre }} {{ $historia->expediente->paciente->Apellido }}</td>
-                            <td>{{ $historia->expediente->Estado_Expediente }}</td>
+
+                            <td>
+                                {{ $historia->expediente->paciente->Nombre ?? 'N/A' }}
+                                {{ $historia->expediente->paciente->Apellido ?? '' }}
+                            </td>
+
+                            <td>{{ $historia->expediente->Estado_Expediente ?? 'N/A' }}</td>
+
+                            <td>{{ $historia->nota_medicas_count }}</td>
+
+                            <td>
+                                @php
+                                    $ultimaNota = $historia->notaMedicas->first();
+                                @endphp
+
+                                @if($ultimaNota)
+                                    {{ $ultimaNota->Fecha }} {{ $ultimaNota->Hora }}
+                                @else
+                                    <span class="text-muted">Sin notas</span>
+                                @endif
+                            </td>
+
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="{{ route('historia.show', $historia->Id_Historia) }}" 
-                                       class="btn btn-info btn-sm" data-bs-toggle="tooltip" title="Ver detalles">
+                                       class="btn btn-info btn-sm">
                                         <i class="bi bi-eye"></i>
                                     </a>
+
                                     <a href="{{ route('historia.edit', $historia->Id_Historia) }}" 
-                                       class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar historia">
+                                       class="btn btn-warning btn-sm">
                                         <i class="bi bi-pencil"></i>
                                     </a>
 
@@ -83,16 +152,17 @@
                                           method="POST" class="d-inline eliminar-form">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-danger btn-sm btn-eliminar" title="Eliminar historia">
+                                        <button type="button" class="btn btn-danger btn-sm btn-eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
+
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">No se encontraron registros</td>
+                            <td colspan="6" class="text-center">No se encontraron registros</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -102,10 +172,11 @@
         <div class="d-flex justify-content-center mt-3">
             {{ $historias->links('pagination::bootstrap-5') }}
         </div>
+
     </div>
 </div>
 
-<!-- SweetAlert2 Confirmación al eliminar -->
+<!-- SweetAlert eliminar -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-eliminar').forEach(btn => {

@@ -199,6 +199,8 @@
         </p>
     </header>
 
+
+
     <!-- Datos Generales -->
     <div class="card mb-4">
         <div class="card-header"><i class="bi bi-info-circle"></i> Datos Generales</div>
@@ -258,30 +260,93 @@
         </div>
     </div>
 
-    <!-- Notas Médicas -->
-    @if($historia->notaMedicas && $historia->notaMedicas->count() > 0)
-    <div class="card mb-4">
-        <div class="card-header"><i class="bi bi-journal-text"></i> Notas Médicas</div>
-        <div class="card-body">
-            @foreach($historia->notaMedicas->sortByDesc('Fecha') as $nota)
-            <div class="border-bottom mb-3 pb-2">
-                <p><strong>Fecha:</strong> {{ $nota->Fecha ?? '---' }} |
-                   <strong>Hora:</strong> {{ $nota->Hora ?? '---' }}</p>
-                <p><strong>Peso:</strong> {{ $nota->Peso ?? '---' }} kg |
-                   <strong>Talla:</strong> {{ $nota->Talla ?? '---' }} m</p>
-                <p><strong>Presión Arterial:</strong> {{ $nota->Presion_Arterial ?? '---' }}</p>
-                <p><strong>Frecuencia Cardíaca:</strong> {{ $nota->Frecuencia_Cardiaca ?? '---' }}</p>
-                <p><strong>Exploración Física:</strong> {{ $nota->Exploracion_Fisica ?? '---' }}</p>
-                <p><strong>Diagnóstico:</strong> {{ $nota->Diagnostico ?? '---' }}</p>
-                <p><strong>Tratamiento:</strong> {{ $nota->Tratamiento ?? '---' }}</p>
-                <p><strong>Plan a Seguir:</strong> {{ $nota->Plan_A_Seguir ?? '---' }}</p>
-            </div>
-            @endforeach
-        </div>
+    <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-journal-medical"></i> Registrar Nota Médica
     </div>
-    @else
-    <div class="alert alert-info">No hay notas médicas registradas para esta historia clínica.</div>
-    @endif
+
+    <div class="card-body">
+        @include('notas._form_interno')
+    </div>
+</div>
+
+
+<!-- Notas Médicas -->
+@if($historia->notaMedicas && $historia->notaMedicas->count() > 0)
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-journal-medical"></i> Notas Médicas
+    </div>
+
+    <div class="card-body">
+
+        @foreach($historia->notaMedicas->sortByDesc('Fecha') as $nota)
+
+        <div class="note-item p-3 mb-4 shadow-sm rounded" style="background:#f8f9fa;">
+            <!-- Encabezado -->
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-check text-primary"></i>
+                    {{ $nota->Fecha }} – {{ $nota->Hora }}
+                </h5>
+                <span class="badge bg-primary px-3 py-2">Nota Médica</span>
+            </div>
+
+            <!-- Fila de datos principales -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><i class="bi bi-person-lines-fill text-primary"></i>
+                        <strong>Peso:</strong> {{ $nota->Peso }} kg</p>
+                </div>
+                <div class="col-md-6">
+                    <p><i class="bi bi-arrows-vertical text-primary"></i>
+                        <strong>Talla:</strong> {{ $nota->Talla }} m</p>
+                </div>
+            </div>
+
+            <!-- Signos -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><i class="bi bi-heart-pulse text-danger"></i>
+                        <strong>Presión Arterial:</strong> {{ $nota->Presion_Arterial }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><i class="bi bi-activity text-danger"></i>
+                        <strong>Frecuencia Cardíaca:</strong> {{ $nota->Frecuencia_Cardiaca }}</p>
+                </div>
+            </div>
+
+            <!-- Info detallada -->
+            <div class="mb-2">
+                <p><strong><i class="bi bi-clipboard2-pulse"></i> Exploración Física:</strong><br>
+                    {{ $nota->Exploracion_Fisica }}</p>
+            </div>
+
+            <div class="mb-2">
+                <p><strong><i class="bi bi-file-medical"></i> Diagnóstico:</strong><br>
+                    {{ $nota->Diagnostico }}</p>
+            </div>
+
+            <div class="mb-2">
+                <p><strong><i class="bi bi-capsule"></i> Tratamiento:</strong><br>
+                    {{ $nota->Tratamiento }}</p>
+            </div>
+
+            <div>
+                <p><strong><i class="bi bi-flag"></i> Plan a Seguir:</strong><br>
+                    {{ $nota->Plan_A_Seguir }}</p>
+            </div>
+        </div>
+
+        @endforeach
+
+    </div>
+</div>
+
+@else
+<div class="alert alert-info">No hay notas médicas registradas para esta historia clínica.</div>
+@endif
+
 
     <div class="d-flex justify-content-between mt-4">
         <a href="{{ route('historia.index') }}" class="btn btn-outline-secondary">
@@ -291,5 +356,19 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@if(session('success'))
+<script>
+Swal.fire({
+    icon: 'success',
+    title: '¡Nota médica registrada!',
+    text: '{{ session("success") }}',
+    confirmButtonColor: '#198754'
+});
+</script>
+@endif
 </body>
 </html>
+
+
