@@ -273,79 +273,84 @@
 
 <!-- Notas Médicas -->
 @if($historia->notaMedicas && $historia->notaMedicas->count() > 0)
-<div class="card mb-4">
-    <div class="card-header">
-        <i class="bi bi-journal-medical"></i> Notas Médicas
+<div class="card shadow-sm mb-4">
+
+    <!-- Encabezado moderno -->
+    <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-journal-medical"></i> Notas Médicas
+        </h5>
+        <span class="badge bg-light text-primary">Total: {{ $historia->notaMedicas->count() }}</span>
     </div>
 
     <div class="card-body">
-
         @foreach($historia->notaMedicas->sortByDesc('Fecha') as $nota)
-
-        <div class="note-item p-3 mb-4 shadow-sm rounded" style="background:#f8f9fa;">
-            <!-- Encabezado -->
+        <div class="note-item p-3 mb-4 shadow-sm rounded border border-light" style="background:#fdfdfd;">
+            
+            <!-- Encabezado de nota -->
             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                <h5 class="mb-0">
+                <h6 class="mb-0">
                     <i class="bi bi-calendar-check text-primary"></i>
-                    {{ $nota->Fecha }} – {{ $nota->Hora }}
-                </h5>
-                <span class="badge bg-primary px-3 py-2">Nota Médica</span>
+                    {{ \Carbon\Carbon::parse($nota->Fecha)->format('d/m/Y') }} – {{ $nota->Hora }}
+                </h6>
+                <span class="badge bg-primary px-3 py-1">Nota Médica</span>
             </div>
 
-            <!-- Fila de datos principales -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <p><i class="bi bi-person-lines-fill text-primary"></i>
-                        <strong>Peso:</strong> {{ $nota->Peso }} kg</p>
+            <!-- Datos principales -->
+            <div class="row mb-3 text-muted">
+                <div class="col-md-6 mb-2">
+                    <i class="bi bi-person-lines-fill text-primary"></i>
+                    <strong>Peso:</strong> {{ $nota->Peso ?? 'N/A' }} kg
                 </div>
-                <div class="col-md-6">
-                    <p><i class="bi bi-arrows-vertical text-primary"></i>
-                        <strong>Talla:</strong> {{ $nota->Talla }} m</p>
-                </div>
-            </div>
-
-            <!-- Signos -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <p><i class="bi bi-heart-pulse text-danger"></i>
-                        <strong>Presión Arterial:</strong> {{ $nota->Presion_Arterial }}</p>
-                </div>
-                <div class="col-md-6">
-                    <p><i class="bi bi-activity text-danger"></i>
-                        <strong>Frecuencia Cardíaca:</strong> {{ $nota->Frecuencia_Cardiaca }}</p>
+                <div class="col-md-6 mb-2">
+                    <i class="bi bi-arrows-expand text-primary"></i>
+                    <strong>Talla:</strong> {{ $nota->Talla ?? 'N/A' }} m
                 </div>
             </div>
 
-            <!-- Info detallada -->
+            <!-- Signos vitales -->
+            <div class="row mb-3 text-muted">
+                <div class="col-md-6 mb-2">
+                    <i class="bi bi-heart-pulse text-danger"></i>
+                    <strong>Presión Arterial:</strong> {{ $nota->Presion_Arterial ?? 'N/A' }}
+                </div>
+                <div class="col-md-6 mb-2">
+                    <i class="bi bi-activity text-danger"></i>
+                    <strong>Frecuencia Cardíaca:</strong> {{ $nota->Frecuencia_Cardiaca ?? 'N/A' }}
+                </div>
+            </div>
+
+            <!-- Detalles clínicos -->
             <div class="mb-2">
-                <p><strong><i class="bi bi-clipboard2-pulse"></i> Exploración Física:</strong><br>
-                    {{ $nota->Exploracion_Fisica }}</p>
-            </div>
-
-            <div class="mb-2">
-                <p><strong><i class="bi bi-file-medical"></i> Diagnóstico:</strong><br>
-                    {{ $nota->Diagnostico }}</p>
+                <p class="mb-1"><strong><i class="bi bi-clipboard2-pulse"></i> Exploración Física:</strong></p>
+                <p class="text-muted">{{ $nota->Exploracion_Fisica ?? 'N/A' }}</p>
             </div>
 
             <div class="mb-2">
-                <p><strong><i class="bi bi-capsule"></i> Tratamiento:</strong><br>
-                    {{ $nota->Tratamiento }}</p>
+                <p class="mb-1"><strong><i class="bi bi-file-medical"></i> Diagnóstico:</strong></p>
+                <p class="text-muted">{{ $nota->Diagnostico ?? 'N/A' }}</p>
+            </div>
+
+            <div class="mb-2">
+                <p class="mb-1"><strong><i class="bi bi-capsule"></i> Tratamiento:</strong></p>
+                <p class="text-muted">{{ $nota->Tratamiento ?? 'N/A' }}</p>
             </div>
 
             <div>
-                <p><strong><i class="bi bi-flag"></i> Plan a Seguir:</strong><br>
-                    {{ $nota->Plan_A_Seguir }}</p>
+                <p class="mb-1"><strong><i class="bi bi-flag"></i> Plan a Seguir:</strong></p>
+                <p class="text-muted">{{ $nota->Plan_A_Seguir ?? 'N/A' }}</p>
             </div>
         </div>
-
         @endforeach
-
     </div>
 </div>
 
 @else
-<div class="alert alert-info">No hay notas médicas registradas para esta historia clínica.</div>
+<div class="alert alert-info shadow-sm">
+    <i class="bi bi-info-circle"></i> No hay notas médicas registradas para esta historia clínica.
+</div>
 @endif
+
 
 
     <div class="d-flex justify-content-between mt-4">
