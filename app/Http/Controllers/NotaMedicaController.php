@@ -159,7 +159,9 @@ class NotaMedicaController extends Controller
             'Hora'  => now()->format('H:i:s'),
         ]);
 
-        return redirect()->route('notas.index')->with('success', 'Nota médica actualizada correctamente.');
+        return redirect()->route('historia.show', $nota->Historia_Id)
+                 ->with('success', 'Nota médica actualizada correctamente.');
+
     }
 
     // 🔍 Búsqueda AJAX de historias clínicas

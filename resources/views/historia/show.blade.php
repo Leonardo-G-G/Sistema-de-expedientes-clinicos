@@ -287,13 +287,20 @@
         @foreach($historia->notaMedicas->sortByDesc('Fecha') as $nota)
         <div class="note-item p-3 mb-4 shadow-sm rounded border border-light" style="background:#fdfdfd;">
             
-            <!-- Encabezado de nota -->
+            <!-- Encabezado de nota con botón editar -->
             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
                 <h6 class="mb-0">
                     <i class="bi bi-calendar-check text-primary"></i>
                     {{ \Carbon\Carbon::parse($nota->Fecha)->format('d/m/Y') }} – {{ $nota->Hora }}
                 </h6>
-                <span class="badge bg-primary px-3 py-1">Nota Médica</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary px-3 py-1">Nota Médica</span>
+                    <a href="{{ route('notas.edit', $nota->Id_Nota) }}" 
+                       class="btn btn-warning btn-sm" 
+                       title="Editar nota médica">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                </div>
             </div>
 
             <!-- Datos principales -->
@@ -352,7 +359,6 @@
 @endif
 
 
-
     <div class="d-flex justify-content-between mt-4">
         <a href="{{ route('historia.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Volver al listado
@@ -365,15 +371,15 @@
 
 @if(session('success'))
 <script>
-Swal.fire({
-    icon: 'success',
-    title: '¡Nota médica registrada!',
-    text: '{{ session("success") }}',
-    confirmButtonColor: '#198754'
+document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: '{{ session("success") }}',
+        confirmButtonColor: '#198754'
+    });
 });
 </script>
 @endif
 </body>
 </html>
-
-
