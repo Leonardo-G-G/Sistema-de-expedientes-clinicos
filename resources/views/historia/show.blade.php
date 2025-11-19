@@ -161,7 +161,7 @@
     <h2>Sistema Clínico</h2>
     <div class="user-info">
         <i class="bi bi-person-circle"></i>
-        <p>{{ Auth::user()->name ?? 'Usuario' }}</p>
+        <p>{{ Auth::user()->nombre_completo ?? 'Usuario' }}</p>
     </div>
 
     <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">

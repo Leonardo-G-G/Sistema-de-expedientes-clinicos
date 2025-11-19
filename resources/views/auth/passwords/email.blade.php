@@ -1,47 +1,103 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restablecer Contraseña</title>
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+<style>
+    body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f2f7fa;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .card {
+        border-radius: 1rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    .card-header {
+        background: linear-gradient(to right, #0d6efd, #6610f2);
+        color: white;
+        font-size: 1.5rem;
+        text-align: center;
+        padding: 1rem;
+        font-weight: 500;
+    }
+</style>
+</head>
+<body>
 
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
+<div class="container" style="max-width: 450px;">
+    <div class="card">
+        <div class="card-header">Restablecer Contraseña</div>
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
+        <div class="card-body p-4">
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Send Password Reset Link') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+            {{-- Mensaje de éxito --}}
+            @if (session('status'))
+                <div class="alert alert-success text-center">
+                    {{ __('Se ha enviado el enlace para restablecer tu contraseña.') }}
                 </div>
-            </div>
+            @endif
+
+            {{-- Errores --}}
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('password.email') }}">
+                @csrf
+
+                <div class="mb-3">
+                    <label class="form-label">Correo Electrónico</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input 
+                            type="email"
+                            name="email"
+                            class="form-control @error('email') is-invalid @enderror"
+                            value="{{ old('email') }}"
+                            placeholder="Ingresa tu correo"
+                            required
+                        >
+                    </div>
+                    @error('email')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg rounded-3">
+                        Enviar enlace
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center mt-3">
+                <a href="{{ route('login') }}" class="text-primary">
+                    Volver al inicio de sesión
+                </a>
+            </p>
         </div>
     </div>
 </div>
-@endsection
+
+</body>
+</html>

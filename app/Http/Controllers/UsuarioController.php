@@ -37,18 +37,19 @@ class UsuarioController extends Controller
         $request->validate([
             'Nombre' => 'required|string|max:255',
             'Apellido' => 'required|string|max:255',
-            'Correo_Electronico' => 'required|email|unique:usuario,Correo_Electronico,' . $usuario->Id_Usuario . ',Id_Usuario',
+            'email' => 'required|email|unique:usuario,email,' . $usuario->Id_Usuario . ',Id_Usuario',
             'Especialidad' => 'nullable|string|max:255',
-            'Contraseña' => 'nullable|string|min:6|confirmed',
+            'password' => 'nullable|string|min:6|confirmed',
         ]);
 
         $usuario->Nombre = $request->Nombre;
         $usuario->Apellido = $request->Apellido;
-        $usuario->Correo_Electronico = $request->Correo_Electronico;
+        $usuario->email = $request->email;
         $usuario->Especialidad = $request->Especialidad;
 
-        if ($request->filled('Contraseña')) {
-            $usuario->Contraseña = Hash::make($request->Contraseña);
+        // Solo actualizar la contraseña si se ingresó
+        if ($request->filled('password')) {
+            $usuario->password = Hash::make($request->password);
         }
 
         $usuario->save();

@@ -4,40 +4,46 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\ResetPasswordNotification;
 
 class Usuario extends Authenticatable
 {
     use Notifiable;
 
+    // Tabla y clave primaria
     protected $table = 'usuario';
     protected $primaryKey = 'Id_Usuario';
     public $timestamps = false;
 
+    // Campos permitidos para asignación masiva
     protected $fillable = [
         'Nombre',
         'Apellido',
-        'Correo_Electronico',
-        'Contraseña',
+        'email',
+        'password',
         'Cedula_Profesional',
         'Especialidad',
         'Fecha_Registro',
     ];
 
-    protected $hidden = ['Contraseña'];
+    // Campos ocultos para arrays y JSON
+    protected $hidden = [
+        'password',
+    ];
 
-    public function expedientes()
+    /**
+     * Sobrescribe la notificación de restablecimiento de contraseña
+     */
+    public function sendPasswordResetNotification($token)
     {
-        return $this->hasMany(Expediente::class, 'Medico_Id', 'Id_Usuario');
+        $this->notify(new ResetPasswordNotification($token));
     }
 
-    public function getAuthPassword()
+    /**
+     * Accesor para obtener el nombre completo del usuario
+     */
+    public function getNombreCompletoAttribute()
     {
-        return $this->Contraseña;
-    }
-
-   
-    public function getNameAttribute()
-    {
-        return $this->Nombre . ' ' . $this->Apellido;
+        return trim("{$this->Nombre} {$this->Apellido}");
     }
 }

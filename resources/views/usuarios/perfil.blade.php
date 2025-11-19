@@ -8,14 +8,14 @@
 
 @section('contenido')
     <div class="container">
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 mx-auto" style="max-width: 650px;">
             <div class="card-header bg-white border-0 fw-semibold fs-5 text-primary">
                 <i class="bi bi-person-lines-fill"></i> Información del Usuario
             </div>
 
             <div class="card-body">
                 <p><strong>Nombre:</strong> {{ $usuario->Nombre }} {{ $usuario->Apellido }}</p>
-                <p><strong>Correo electrónico:</strong> {{ $usuario->Correo_Electronico }}</p>
+                <p><strong>Correo electrónico:</strong> {{ $usuario->email }}</p>
                 <p><strong>Especialidad:</strong> {{ $usuario->Especialidad ?? 'No especificada' }}</p>
 
                 <div class="text-center mt-4">
@@ -25,7 +25,5 @@
                 </div>
             </div>
         </div>
-
-        
     </div>
 @endsection

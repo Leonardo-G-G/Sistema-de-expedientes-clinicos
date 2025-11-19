@@ -2,30 +2,13 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Defaults
-    |--------------------------------------------------------------------------
-    |
-    | Define la configuración por defecto del guard y del broker de contraseñas.
-    |
-    */
-
+    // Valores predeterminados
     'defaults' => [
         'guard' => 'web',
         'passwords' => 'usuarios',
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Guards
-    |--------------------------------------------------------------------------
-    |
-    | Aquí defines cómo se manejará la autenticación. 
-    | Usamos el driver "session" y el provider "usuarios".
-    |
-    */
-
+    // Guards (método de autenticación)
     'guards' => [
         'web' => [
             'driver' => 'session',
@@ -33,16 +16,7 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | User Providers
-    |--------------------------------------------------------------------------
-    |
-    | Aquí defines cómo se obtienen los usuarios desde tu base de datos.
-    | En este caso, usas tu modelo App\Models\Usuario.
-    |
-    */
-
+    // Providers (de dónde se obtienen los usuarios)
     'providers' => [
         'usuarios' => [
             'driver' => 'eloquent',
@@ -50,34 +24,17 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Reset de contraseñas
-    |--------------------------------------------------------------------------
-    |
-    | Define el comportamiento del restablecimiento de contraseñas.
-    |
-    */
-
+    // Ajustes para recuperación de contraseña
     'passwords' => [
         'usuarios' => [
             'provider' => 'usuarios',
             'table' => 'password_reset_tokens',
-            'expire' => 60,
-            'throttle' => 60,
+            'expire' => 60,      // Minutos antes de expirar el enlace
+            'throttle' => 60,    // Minutos para reenviar otro email
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Tiempo de confirmación de contraseña
-    |--------------------------------------------------------------------------
-    |
-    | Cuánto tiempo (en segundos) la confirmación de contraseña será válida.
-    | Por defecto, 3 horas.
-    |
-    */
-
+    // Tiempo de expiración de confirmación de contraseña
     'password_timeout' => 10800,
 
 ];

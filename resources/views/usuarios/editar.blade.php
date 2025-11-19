@@ -20,19 +20,19 @@
                 <div class="mb-3">
                     <label for="Nombre" class="form-label fw-semibold">Nombre</label>
                     <input type="text" name="Nombre" id="Nombre" class="form-control"
-                           value="{{ old('Nombre', $usuario->Nombre) }}" required>
+                           value="{{ old('Nombre', $usuario->Nombre) }}" required autocomplete="given-name">
                 </div>
 
                 <div class="mb-3">
                     <label for="Apellido" class="form-label fw-semibold">Apellido</label>
                     <input type="text" name="Apellido" id="Apellido" class="form-control"
-                           value="{{ old('Apellido', $usuario->Apellido) }}" required>
+                           value="{{ old('Apellido', $usuario->Apellido) }}" required autocomplete="family-name">
                 </div>
 
                 <div class="mb-3">
-                    <label for="Correo_Electronico" class="form-label fw-semibold">Correo Electrónico</label>
-                    <input type="email" name="Correo_Electronico" id="Correo_Electronico" class="form-control"
-                           value="{{ old('Correo_Electronico', $usuario->Correo_Electronico) }}" required>
+                    <label for="email" class="form-label fw-semibold">Correo Electrónico</label>
+                    <input type="email" name="email" id="email" class="form-control"
+                           value="{{ old('email', $usuario->email) }}" required autocomplete="email">
                 </div>
 
                 <div class="mb-3">
@@ -42,13 +42,13 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="Contraseña" class="form-label fw-semibold">Contraseña (opcional)</label>
-                    <input type="password" name="Contraseña" id="Contraseña" class="form-control">
+                    <label for="password" class="form-label fw-semibold">Contraseña (opcional)</label>
+                    <input type="password" name="password" id="password" class="form-control" autocomplete="new-password">
                 </div>
 
                 <div class="mb-3">
-                    <label for="Contraseña_confirmation" class="form-label fw-semibold">Confirmar Contraseña</label>
-                    <input type="password" name="Contraseña_confirmation" id="Contraseña_confirmation" class="form-control">
+                    <label for="password_confirmation" class="form-label fw-semibold">Confirmar Contraseña</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" autocomplete="new-password">
                 </div>
 
                 <div class="text-center mt-4">
@@ -63,9 +63,6 @@
         </div>
     </div>
 
-    
-
-    {{-- ✅ SweetAlert2 para mostrar éxito --}}
     @if(session('success'))
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>

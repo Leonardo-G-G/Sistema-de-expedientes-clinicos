@@ -9,6 +9,8 @@ use App\Http\Controllers\HistoriaClinicaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\NotaMedicaController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +27,12 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Rutas de restablecimiento de contraseña (fuera del grupo auth)
+Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+
 /*
 |--------------------------------------------------------------------------
 | 🔒 RUTAS PROTEGIDAS POR AUTENTICACIÓN
@@ -36,9 +44,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | 📂 Expedientes Clínicos
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::prefix('expedientes')->name('expedientes.')->group(function () {
         Route::get('/', [ExpedienteController::class, 'index'])->name('index');
@@ -47,24 +55,17 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{Id_Expediente}', [ExpedienteController::class, 'update'])->name('update');
         Route::delete('/{Id_Expediente}', [ExpedienteController::class, 'destroy'])->name('destroy');
 
-        // 🔍 Búsqueda dinámica de pacientes (para crear expediente)
         Route::get('/buscar-pacientes', [ExpedienteController::class, 'buscarPacientes'])->name('buscarPacientes');
-
-        // 🔍 Búsqueda de expedientes clínicos (para historia clínica)
         Route::get('/buscar-expedientes', [ExpedienteController::class, 'buscarExpedientes'])->name('buscarExpedientes');
     });
 
-    // 🔍 Búsqueda de historias clínicas
     Route::get('/buscar-historias', [NotaMedicaController::class, 'buscarHistorias'])->name('buscarHistorias');
-
-    // 🔎 Verificar si una historia ya tiene nota médica
-    Route::get('/verificar-nota/{Historia_Id}', [NotaMedicaController::class, 'verificarNota'])
-        ->name('verificarNota');
+    Route::get('/verificar-nota/{Historia_Id}', [NotaMedicaController::class, 'verificarNota'])->name('verificarNota');
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | 🩺 Historia Clínica
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::prefix('historia')->name('historia.')->group(function () {
         Route::get('/', [HistoriaClinicaController::class, 'index'])->name('index');
@@ -77,9 +78,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | 🧾 Notas Médicas
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::prefix('notas')->name('notas.')->group(function () {
         Route::get('/', [NotaMedicaController::class, 'index'])->name('index');
@@ -92,9 +93,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | 👨‍⚕️ Pacientes
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::prefix('pacientes')->name('pacientes.')->group(function () {
         Route::get('/', [PacienteController::class, 'index'])->name('index');
@@ -107,15 +108,16 @@ Route::middleware(['auth'])->group(function () {
     });
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | 👤 Perfil de Usuario
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::prefix('perfil')->name('usuario.')->group(function () {
         Route::get('/', [UsuarioController::class, 'index'])->name('perfil');
         Route::get('/editar', [UsuarioController::class, 'edit'])->name('editar');
         Route::put('/', [UsuarioController::class, 'update'])->name('actualizar');
     });
+
 });
 
 /*

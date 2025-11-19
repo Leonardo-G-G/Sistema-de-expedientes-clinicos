@@ -11,8 +11,8 @@ return new class extends Migration {
             $table->id('Id_Usuario');
             $table->string('Nombre', 100);
             $table->string('Apellido', 100);
-            $table->string('Correo_Electronico', 100)->unique();
-            $table->string('Contraseña', 255);
+            $table->string('email', 100)->unique();
+            $table->string('password', 255);
             $table->string('Cedula_Profesional', 50)->nullable();
             $table->string('Especialidad', 100)->nullable();
             $table->timestamp('Fecha_Registro')->useCurrent();
