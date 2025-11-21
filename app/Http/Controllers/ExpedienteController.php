@@ -36,38 +36,39 @@ class ExpedienteController extends Controller
 
     // 💾 GUARDAR EXPEDIENTE
     public function store(Request $request)
-    {
-        $request->validate([
-            'Paciente_Id' => 'required|exists:paciente,Id_Paciente',
-        ], [
-            'Paciente_Id.required' => '⚠️ El campo paciente es obligatorio.',
-            'Paciente_Id.exists' => '⚠️ Paciente no encontrado.',
-        ]);
+{
+    $request->validate([
+        'Paciente_Id' => 'required|exists:paciente,Id_Paciente',
+    ], [
+        'Paciente_Id.required' => '⚠️ El campo paciente es obligatorio.',
+        'Paciente_Id.exists' => '⚠️ Paciente no encontrado.',
+    ]);
 
-        $medicoId = Auth::user()->Id_Usuario;
+    $medicoId = Auth::user()->Id_Usuario;
 
-        // Verificar si ya existe expediente
-        $existe = Expediente::where('Paciente_Id', $request->Paciente_Id)
-            ->where('Medico_Id', $medicoId)
-            ->exists();
+    $existe = Expediente::where('Paciente_Id', $request->Paciente_Id)
+        ->where('Medico_Id', $medicoId)
+        ->exists();
 
-        if ($existe) {
-            return back()
-                ->withErrors(['Paciente_Id' => '⚠️ Expediente clínico ya existente.'])
-                ->withInput();
-        }
-
-        Expediente::create([
-            'Paciente_Id' => $request->Paciente_Id,
-            'Medico_Id' => $medicoId,
-            'Estado_Expediente' => 'Activo',
-            'Fecha_Apertura' => Carbon::now()->format('Y-m-d'),
-        ]);
-
-        return redirect()
-            ->route('expedientes.index')
-            ->with('success', 'Expediente creado exitosamente.');
+    if ($existe) {
+        return back()
+            ->withErrors(['Paciente_Id' => '⚠️ Expediente clínico ya existente.'])
+            ->withInput();
     }
+
+    // Guardamos el expediente; created_at tomará la fecha y hora real del sistema
+    Expediente::create([
+        'Paciente_Id' => $request->Paciente_Id,
+        'Medico_Id' => $medicoId,
+        'Estado_Expediente' => 'Activo',
+        'Fecha_Apertura' => now()->toDateString(), // opcional, solo fecha
+    ]);
+
+    return redirect()
+        ->route('expedientes.index')
+        ->with('success', 'Expediente creado exitosamente.');
+}
+
 
 
     // ✏️ EDITAR
@@ -97,6 +98,9 @@ class ExpedienteController extends Controller
             'Paciente_Id' => $request->Paciente_Id,
             'Estado_Expediente' => $request->Estado_Expediente,
         ]);
+
+        // 👇 Importantísimo: updated_at se actualiza solo (timestamps = true)
+        // Esto permitirá mostrar "última edición" en dashboard si quieres después.
 
         return redirect()
             ->route('expedientes.index')
@@ -152,7 +156,7 @@ class ExpedienteController extends Controller
     }
 
 
-    // 🔍 BUSCAR PACIENTES PARA ASIGNAR A EXPEDIENTE (AJAX)
+    // 🔍 BUSCAR PACIENTES (AJAX)
     public function buscarPacientes(Request $request)
     {
         $query = trim($request->get('q', ''));

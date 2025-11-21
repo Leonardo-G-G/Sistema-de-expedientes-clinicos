@@ -287,21 +287,37 @@
         @foreach($historia->notaMedicas->sortByDesc('Fecha') as $nota)
         <div class="note-item p-3 mb-4 shadow-sm rounded border border-light" style="background:#fdfdfd;">
             
-            <!-- Encabezado de nota con botón editar -->
             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                <h6 class="mb-0">
-                    <i class="bi bi-calendar-check text-primary"></i>
-                    {{ \Carbon\Carbon::parse($nota->Fecha)->format('d/m/Y') }} – {{ $nota->Hora }}
-                </h6>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-primary px-3 py-1">Nota Médica</span>
-                    <a href="{{ route('notas.edit', $nota->Id_Nota) }}" 
-                       class="btn btn-warning btn-sm" 
-                       title="Editar nota médica">
-                        <i class="bi bi-pencil"></i> Editar
-                    </a>
-                </div>
-            </div>
+    <h6 class="mb-0">
+        <i class="bi bi-calendar-check text-primary"></i>
+        {{ \Carbon\Carbon::parse($nota->Fecha)->format('d/m/Y') }} – {{ $nota->Hora }}
+    </h6>
+
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary px-3 py-1">Nota Médica</span>
+
+        <!-- Botón Editar -->
+        <a href="{{ route('notas.edit', $nota->Id_Nota) }}" 
+           class="btn btn-warning btn-sm" 
+           title="Editar nota médica">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+        <!-- Botón Eliminar -->
+        <form action="{{ route('notas.destroy', $nota->Id_Nota) }}" 
+              method="POST" 
+              class="d-inline eliminar-form">
+            @csrf
+            @method('DELETE')
+            <button type="submit" 
+                    class="btn btn-danger btn-sm btn-eliminar"
+                    title="Eliminar nota médica">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </form>
+    </div>
+</div>
+
 
             <!-- Datos principales -->
             <div class="row mb-3 text-muted">
@@ -381,5 +397,36 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endif
+
+<!-- 🔥 Confirmación de eliminación con SweetAlert -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    document.querySelectorAll('.btn-eliminar').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            let form = this.closest('.eliminar-form');
+
+            Swal.fire({
+                title: '¿Desea eliminar esta nota médica?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+
+});
+</script>
+
 </body>
 </html>
+
